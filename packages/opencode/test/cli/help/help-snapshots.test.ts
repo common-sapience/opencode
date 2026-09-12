@@ -44,24 +44,14 @@ function normalize(text: string): string {
 // top-level help on `--help` and exits 1; not a real opencode command.
 const TOP_LEVEL = [
   "acp",
-  "mcp",
-  "attach",
-  "run",
-  "debug",
-  "providers", // aliased to `auth`
-  "agent",
-  "upgrade",
-  "uninstall",
   "serve",
-  "web",
-  "models",
-  "stats",
+  "mcp",
+  "agent",
+  "generate",
+  "debug",
   "export",
   "import",
-  "github",
-  "pr",
   "session",
-  "plugin",
   "db",
 ] as const
 
@@ -73,15 +63,10 @@ const SUBCOMMANDS = [
   ["mcp", "add"],
   ["mcp", "auth"],
   ["mcp", "logout"],
-  ["providers", "list"],
-  ["providers", "login"],
-  ["providers", "logout"],
   ["agent", "create"],
   ["agent", "list"],
   ["session", "list"],
   ["session", "delete"],
-  ["github", "install"],
-  ["github", "run"],
   ["db", "path"],
 ] as const
 
@@ -101,10 +86,12 @@ describe("opencode CLI help-text snapshots", () => {
         const topLevel = yield* opencode.spawn(["--help"], { env: SNAPSHOT_ENV })
         expect(topLevel.exitCode).toBe(0)
         expect(topLevel.stderr.endsWith("\n")).toBe(true)
-        expect(topLevel.stderr).toContain("--mini")
-        expect(topLevel.stderr).not.toContain("--thinking")
-        expect(topLevel.stderr).not.toContain("--variant")
-        expect(topLevel.stderr).not.toContain("--demo")
+        expect(topLevel.stderr).toContain("acp")
+        expect(topLevel.stderr).toContain("serve")
+        // The terminal interface and the vendor-facing commands are not part of this build.
+        for (const gone of ["tui", "attach", "run", "web", "upgrade", "uninstall", "providers", "models", "stats", "github", "pr", "plugin"]) {
+          expect(topLevel.stderr).not.toContain(`opencode ${gone}`)
+        }
 
         const argvs: Array<readonly string[]> = [...TOP_LEVEL.map((c) => [c] as const), ...SUBCOMMANDS]
 
