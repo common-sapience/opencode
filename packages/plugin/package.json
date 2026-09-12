@@ -11,7 +11,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./tool": "./src/tool.ts",
-    "./tui": "./src/tui.ts",
     "./v2/effect": "./src/v2/effect/index.ts",
     "./v2/effect/integration": "./src/v2/effect/integration.ts",
     "./v2/effect/plugin": "./src/v2/effect/plugin.ts",
@@ -26,11 +25,7 @@
     "effect": "catalog:",
     "zod": "catalog:"
   },
-  "peerDependencies": {
-    "@opentui/core": ">=0.4.5",
-    "@opentui/keymap": ">=0.4.5",
-    "@opentui/solid": ">=0.4.5"
-  },
+  "peerDependencies": {},
   "peerDependenciesMeta": {
     "@opentui/core": {
       "optional": true
@@ -43,9 +38,6 @@
     }
   },
   "devDependencies": {
-    "@opentui/core": "catalog:",
-    "@opentui/keymap": "catalog:",
-    "@opentui/solid": "catalog:",
     "@tsconfig/node22": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:",
