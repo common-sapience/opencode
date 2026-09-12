@@ -1,4 +1,4 @@
-import { describe, expect } from "bun:test"
+import { afterAll, beforeAll, describe, expect } from "bun:test"
 import { makeGlobalNode } from "@opencode-ai/core/effect/app-node"
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { httpClient } from "@opencode-ai/core/effect/app-node-platform"
@@ -6,7 +6,7 @@ import { Effect, Layer, Stream } from "effect"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process"
 import { Installation } from "../../src/installation"
-import { InstallationChannel } from "@opencode-ai/core/installation/version"
+import { InstallationChannel, InstallationVersion } from "@opencode-ai/core/installation/version"
 import { CrossSpawnSpawner } from "@opencode-ai/core/cross-spawn-spawner"
 import { testEffect } from "../lib/effect"
 
@@ -66,7 +66,18 @@ function testLayer(
   ])
 }
 
+// Self-upgrade is off by default in this build (the engine ships with the desktop package), so the
+// cases that exercise the upstream lookup opt back in explicitly; the default is asserted below.
 describe("installation", () => {
+  const previous = process.env["OPENCODE_DISABLE_AUTOUPDATE"]
+  beforeAll(() => {
+    process.env["OPENCODE_DISABLE_AUTOUPDATE"] = "0"
+  })
+  afterAll(() => {
+    if (previous === undefined) delete process.env["OPENCODE_DISABLE_AUTOUPDATE"]
+    else process.env["OPENCODE_DISABLE_AUTOUPDATE"] = previous
+  })
+
   describe("latest", () => {
     testEffect(testLayer(() => jsonResponse({ tag_name: "v1.2.3" }))).effect(
       "reads release version from GitHub releases",
@@ -237,4 +248,33 @@ describe("installation", () => {
       }),
     )
   })
+})
+
+describe("installation with self-upgrade disabled", () => {
+  const previous = process.env["OPENCODE_DISABLE_AUTOUPDATE"]
+  beforeAll(() => {
+    delete process.env["OPENCODE_DISABLE_AUTOUPDATE"]
+  })
+  afterAll(() => {
+    if (previous !== undefined) process.env["OPENCODE_DISABLE_AUTOUPDATE"] = previous
+  })
+
+  const unreachable = testLayer(() => {
+    throw new Error("the default build must not contact a release channel")
+  })
+
+  testEffect(unreachable).effect("latest reports the running version without any network call", () =>
+    Effect.gen(function* () {
+      const result = yield* Installation.use.latest("npm")
+      expect(result).toBe(InstallationVersion)
+    }),
+  )
+
+  testEffect(unreachable).effect("upgrade refuses instead of replacing the binary", () =>
+    Effect.gen(function* () {
+      const error = yield* Installation.use.upgrade("npm", "9.9.9").pipe(Effect.flip)
+      expect(error._tag).toBe("UpgradeFailedError")
+      expect(error.message).toContain("disabled")
+    }),
+  )
 })

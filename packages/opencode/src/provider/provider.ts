@@ -603,7 +603,15 @@ const layer = Layer.effect(
         const disabled = new Set(cfg.disabled_providers ?? [])
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
 
+        const configured = new Set(configProviders.map(([id]) => id))
+
+        // ENG-12 / RULE-02: the platform gateway is configured by the host, never discovered.
+        // Without this a catalog entry plus a matching environment variable would be enough to
+        // bring up a second provider, which is the hole `enabled_providers` alone leaves open --
+        // a user config can simply omit that key. Requiring an explicit `provider` definition
+        // means the host's managed config decides what exists, and nothing else can add to it.
         function isProviderAllowed(providerID: ProviderV2.ID): boolean {
+          if (!configured.has(providerID)) return false
           if (enabled && !enabled.has(providerID)) return false
           if (disabled.has(providerID)) return false
           return true

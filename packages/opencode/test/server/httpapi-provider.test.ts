@@ -17,7 +17,12 @@ const testStateLayer = Layer.effectDiscard(
 )
 
 const it = testEffect(Layer.mergeAll(testStateLayer, LayerNode.compile(FSUtil.node), httpApiLayer))
-const projectOptions = { config: { formatter: false, lsp: false } }
+// ENG-12: a provider exists only if configuration defines it and its adapter is
+// openai-compatible, so these cases drive the plugin auth loader through such a provider.
+const LOCKED_PROVIDER = "llmgateway"
+const projectOptions = {
+  config: { formatter: false, lsp: false, provider: { [LOCKED_PROVIDER]: {} } },
+}
 const providerID = "test-oauth-parity"
 const oauthURL = "https://example.com/oauth"
 const oauthInstructions = "Finish OAuth"
@@ -26,7 +31,7 @@ function providerListHasFetch(list: unknown) {
   if (!Array.isArray(list)) return false
   return list.some((item: unknown) => {
     if (typeof item !== "object" || item === null || !("id" in item) || !("options" in item)) return false
-    if (item.id !== "google") return false
+    if (item.id !== LOCKED_PROVIDER) return false
     if (typeof item.options !== "object" || item.options === null) return false
     return "fetch" in item.options
   })
@@ -192,7 +197,7 @@ function writeFunctionOptionsPlugin(dir: string) {
         '  id: "test.provider-function-options",',
         "  server: async () => ({",
         "    auth: {",
-        '      provider: "google",',
+        '      provider: "llmgateway",',
         "      loader: async (_getAuth, provider) => {",
         "        for (const model of Object.values(provider.models ?? {})) {",
         "          model.cost = { input: 0, output: 0 }",
@@ -224,7 +229,7 @@ function writeProviderModelsMutationPlugin(dir: string) {
         '  id: "test.provider-models-mutation",',
         "  server: async () => ({",
         "    provider: {",
-        '      id: "google",',
+        `      id: "${LOCKED_PROVIDER}",`,
         "      models: async (provider) => {",
         "        const models = Object.fromEntries(",
         "          Object.entries(provider.models ?? {}).map(([id, model]) => [id, { ...model }]),",
@@ -358,7 +363,7 @@ describe("provider HttpApi", () => {
       yield* setEnvScoped(
         "OPENCODE_AUTH_CONTENT",
         JSON.stringify({
-          google: { type: "oauth", refresh: "dummy", access: "dummy", expires: 9999999999999 },
+          [LOCKED_PROVIDER]: { type: "oauth", refresh: "dummy", access: "dummy", expires: 9999999999999 },
         }),
       )
       const headers = { "x-opencode-directory": directory }
@@ -372,8 +377,8 @@ describe("provider HttpApi", () => {
       const configBody = yield* configResponse.json
       expect(hasProviderWithFetch(providerBody, "all")).toBe(false)
       expect(hasProviderWithFetch(configBody, "providers")).toBe(false)
-      expect(hasNonZeroModelCost(providerBody, "all", "google")).toBe(true)
-      expect(hasNonZeroModelCost(configBody, "providers", "google")).toBe(true)
+      expect(hasNonZeroModelCost(providerBody, "all", LOCKED_PROVIDER)).toBe(true)
+      expect(hasNonZeroModelCost(configBody, "providers", LOCKED_PROVIDER)).toBe(true)
     }),
     { ...projectOptions, init: writeFunctionOptionsPlugin },
   )
@@ -392,9 +397,9 @@ describe("provider HttpApi", () => {
 
       const providerBody = yield* providerResponse.json
       const configBody = yield* configResponse.json
-      expect(hasProviderMutationMarker(providerBody, "all", "google")).toBe(false)
-      expect(hasProviderMutationMarker(configBody, "providers", "google")).toBe(false)
-      expect(hasNonZeroModelCost(providerBody, "all", "google")).toBe(true)
+      expect(hasProviderMutationMarker(providerBody, "all", LOCKED_PROVIDER)).toBe(false)
+      expect(hasProviderMutationMarker(configBody, "providers", LOCKED_PROVIDER)).toBe(false)
+      expect(hasNonZeroModelCost(providerBody, "all", LOCKED_PROVIDER)).toBe(true)
     }),
     { ...projectOptions, init: writeProviderModelsMutationPlugin },
   )
