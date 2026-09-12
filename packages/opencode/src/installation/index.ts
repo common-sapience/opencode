@@ -14,6 +14,7 @@ import semver from "semver"
 import { InstallationChannel, InstallationVersion } from "@opencode-ai/core/installation/version"
 import { NpmConfig } from "@opencode-ai/core/npm-config"
 import { InstallationEvent } from "@opencode-ai/schema/installation-event"
+import { Flag } from "@opencode-ai/core/flag/flag"
 
 export type Method = "curl" | "npm" | "yarn" | "pnpm" | "bun" | "brew" | "scoop" | "choco" | "unknown"
 
@@ -206,6 +207,9 @@ const layer: Layer.Layer<Service, never, HttpClient.HttpClient | AppProcess.Serv
         return "unknown" as Method
       }),
       latest: Effect.fn("Installation.latest")(function* (installMethod?: Method) {
+        // The engine ships and upgrades with the desktop package (HOST-01, HOST-08), so the
+        // default build never asks an upstream release channel what the newest version is.
+        if (Flag.OPENCODE_DISABLE_AUTOUPDATE) return InstallationVersion
         const detectedMethod = installMethod || (yield* result.method())
 
         if (detectedMethod === "brew") {
@@ -263,6 +267,8 @@ const layer: Layer.Layer<Service, never, HttpClient.HttpClient | AppProcess.Serv
         return data.tag_name.replace(/^v/, "")
       }, Effect.orDie),
       upgrade: Effect.fn("Installation.upgrade")(function* (m: Method, target: string) {
+        if (Flag.OPENCODE_DISABLE_AUTOUPDATE)
+          return yield* new UpgradeFailedError({ stderr: "Self-upgrade is disabled in this build" })
         let upgradeResult: { code: number; stdout: string; stderr: string } | undefined
         switch (m) {
           case "curl":

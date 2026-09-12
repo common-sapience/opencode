@@ -14,6 +14,8 @@ export interface Interface {
 
 export class Service extends Context.Service<Service, Interface>()("@opencode/SessionShare") {}
 
+const SHARING_ENABLED = false
+
 const layer = Layer.effect(
   Service,
   Effect.gen(function* () {
@@ -23,9 +25,10 @@ const layer = Layer.effect(
     const scope = yield* Scope.Scope
     const flags = yield* RuntimeFlags.Service
 
+    // Sessions live on the user's machine and in the relay's encrypted envelopes (RULE-01);
+    // publishing one to an upstream share service is off in this build regardless of config.
     const share = Effect.fn("SessionShare.share")(function* (sessionID: SessionID) {
-      const conf = yield* cfg.get()
-      if (conf.share === "disabled") throw new Error("Sharing is disabled in configuration")
+      if (!SHARING_ENABLED) throw new Error("Sharing is disabled in this build")
       const result = yield* shareNext.create(sessionID)
       yield* session.setShare({ sessionID, share: { url: result.url } })
       return result
@@ -37,12 +40,7 @@ const layer = Layer.effect(
     })
 
     const create = Effect.fn("SessionShare.create")(function* (input?: Session.CreateInput) {
-      const result = yield* session.create(input)
-      if (result.parentID) return result
-      const conf = yield* cfg.get()
-      if (!(flags.autoShare || conf.share === "auto")) return result
-      yield* share(result.id).pipe(Effect.ignore, Effect.forkIn(scope))
-      return result
+      return yield* session.create(input)
     })
 
     return Service.of({ create, share, unshare })

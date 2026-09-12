@@ -5,6 +5,16 @@ export function truthy(key: string) {
   return value === "true" || value === "1"
 }
 
+// Switches that the product keeps off by default: the engine ships as a local component of the
+// host, so it must not reach the upstream project on its own. Setting the variable to 0/false is
+// the only way back in, which keeps upstream's manual workflows available without flipping the
+// shipped default.
+function optOut(key: string) {
+  const value = process.env[key]?.toLowerCase()
+  if (value === undefined || value === "") return true
+  return !(value === "false" || value === "0")
+}
+
 const copy = process.env["OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"]
 const fff = process.env["OPENCODE_DISABLE_FFF"]
 
@@ -20,13 +30,13 @@ export const Flag = {
   OPENCODE_GIT_BASH_PATH: process.env["OPENCODE_GIT_BASH_PATH"],
   OPENCODE_CONFIG: process.env["OPENCODE_CONFIG"],
   OPENCODE_CONFIG_CONTENT: process.env["OPENCODE_CONFIG_CONTENT"],
-  OPENCODE_DISABLE_AUTOUPDATE: truthy("OPENCODE_DISABLE_AUTOUPDATE"),
+  OPENCODE_DISABLE_AUTOUPDATE: optOut("OPENCODE_DISABLE_AUTOUPDATE"),
   OPENCODE_ALWAYS_NOTIFY_UPDATE: truthy("OPENCODE_ALWAYS_NOTIFY_UPDATE"),
   OPENCODE_DISABLE_PRUNE: truthy("OPENCODE_DISABLE_PRUNE"),
   OPENCODE_DISABLE_TERMINAL_TITLE: truthy("OPENCODE_DISABLE_TERMINAL_TITLE"),
   OPENCODE_SHOW_TTFD: truthy("OPENCODE_SHOW_TTFD"),
   OPENCODE_DISABLE_AUTOCOMPACT: truthy("OPENCODE_DISABLE_AUTOCOMPACT"),
-  OPENCODE_DISABLE_MODELS_FETCH: truthy("OPENCODE_DISABLE_MODELS_FETCH"),
+  OPENCODE_DISABLE_MODELS_FETCH: optOut("OPENCODE_DISABLE_MODELS_FETCH"),
   OPENCODE_DISABLE_MOUSE: truthy("OPENCODE_DISABLE_MOUSE"),
   OPENCODE_FAKE_VCS: process.env["OPENCODE_FAKE_VCS"],
   OPENCODE_SERVER_PASSWORD: process.env["OPENCODE_SERVER_PASSWORD"],

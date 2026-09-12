@@ -367,45 +367,13 @@ const layer = Layer.effect(
           return mergePluginOrigins(source, next.plugin, kind)
         }
 
+        // RULE-02 / ENG-12: config comes from the managed directory and the host, never from a
+        // remote endpoint that could inject a provider. The well-known token still reaches the
+        // environment so existing credentials keep working; its remote config is not fetched.
         for (const [key, value] of Object.entries(auth)) {
           if (value.type === "wellknown") {
-            const url = key.replace(/\/+$/, "")
             authEnv[value.key] = value.token
-            const wellknownURL = `${url}/.well-known/opencode`
-            yield* Effect.logDebug("fetching remote config", { url: wellknownURL })
-            const wellknown = yield* fetchRemoteJson(wellknownURL, undefined, ConfigV1.WellKnown, url)
-            const remote = yield* Effect.promise(() =>
-              substituteWellKnownRemoteConfig({
-                value: wellknown.remote_config,
-                dir: url,
-                source: wellknownURL,
-                env: authEnv,
-              }),
-            )
-            const fetchedConfig = remote
-              ? yield* Effect.gen(function* () {
-                  yield* Effect.logDebug("fetching remote config", { url: remote.url })
-                  const data = yield* fetchRemoteJson(remote.url, remote.headers, Schema.Json, url)
-                  if (isRecord(data) && isRecord(data.config)) return data.config
-                  if (isRecord(data)) return data
-                  return yield* Effect.die(
-                    new Error(`failed to decode remote config from ${remote.url}: expected object`),
-                  )
-                })
-              : {}
-            const remoteConfig = mergeConfig(isRecord(wellknown.config) ? wellknown.config : {}, fetchedConfig)
-            if (!remoteConfig.$schema) remoteConfig.$schema = "https://opencode.ai/config.json"
-            const source = wellknownURL
-            const next = yield* loadConfig(
-              JSON.stringify(remoteConfig),
-              {
-                dir: path.dirname(source),
-                source,
-              },
-              authEnv,
-            )
-            yield* merge(source, next, "global")
-            yield* Effect.logDebug("loaded remote config from well-known", { url })
+            yield* Effect.logDebug("skipping remote well-known config", { url: key.replace(/\/+$/, "") })
           }
         }
 
@@ -489,43 +457,8 @@ const layer = Layer.effect(
           yield* Effect.logDebug("loaded custom config from OPENCODE_CONFIG_CONTENT")
         }
 
-        const activeAccount = Option.getOrUndefined(
-          yield* accountSvc.active().pipe(Effect.catch(() => Effect.succeed(Option.none()))),
-        )
-        if (activeAccount?.active_org_id) {
-          const accountID = activeAccount.id
-          const orgID = activeAccount.active_org_id
-          const url = activeAccount.url
-          yield* Effect.gen(function* () {
-            const [configOpt, tokenOpt] = yield* Effect.all(
-              [accountSvc.config(accountID, orgID), accountSvc.token(accountID)],
-              { concurrency: 2 },
-            )
-            if (Option.isSome(tokenOpt)) {
-              process.env["OPENCODE_CONSOLE_TOKEN"] = tokenOpt.value
-              yield* env.set("OPENCODE_CONSOLE_TOKEN", tokenOpt.value)
-            }
-
-            if (Option.isSome(configOpt)) {
-              const source = `${url}/api/config`
-              const next = yield* loadConfig(JSON.stringify(configOpt.value), {
-                dir: path.dirname(source),
-                source,
-              })
-              for (const providerID of Object.keys(next.provider ?? {})) {
-                consoleManagedProviders.add(providerID)
-              }
-              yield* merge(source, next, "global")
-            }
-          }).pipe(
-            Effect.withSpan("Config.loadActiveOrgConfig"),
-            Effect.catch((err) =>
-              Effect.logDebug("failed to fetch remote account config", {
-                error: err instanceof Error ? err.message : String(err),
-              }),
-            ),
-          )
-        }
+        // The upstream account service is not part of the product: accounts and keys belong to
+        // the platform (DEP), so no organization config is pulled from it.
 
         const managedDir = ConfigManaged.managedConfigDir()
         if (existsSync(managedDir)) {
