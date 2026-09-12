@@ -19,6 +19,7 @@ import { eq } from "drizzle-orm"
 import { and } from "drizzle-orm"
 import { gte } from "drizzle-orm"
 import { isNull } from "drizzle-orm"
+import { isNotNull } from "drizzle-orm"
 import { desc } from "drizzle-orm"
 import { like } from "drizzle-orm"
 import { sql } from "drizzle-orm"
@@ -308,6 +309,7 @@ export type ListInput = {
   start?: number
   search?: string
   limit?: number
+  archived?: boolean
 }
 
 export type GlobalListInput = {
@@ -991,6 +993,8 @@ function listByProject(
   if (input.search) {
     conditions.push(like(SessionTable.title, `%${input.search}%`))
   }
+  // Archived sessions live in their own list, so the default list is the unarchived ones.
+  conditions.push(input.archived ? isNotNull(SessionTable.time_archived) : isNull(SessionTable.time_archived))
 
   const limit = input.limit ?? 100
 

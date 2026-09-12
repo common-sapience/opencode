@@ -71,6 +71,7 @@ export const sessionHandlers = HttpApiBuilder.group(InstanceHttpApi, "session", 
         start: ctx.query.start,
         search: ctx.query.search,
         limit: ctx.query.limit,
+        archived: ctx.query.archived,
       })
     })
 
@@ -197,8 +198,10 @@ export const sessionHandlers = HttpApiBuilder.group(InstanceHttpApi, "session", 
           permission: Permission.merge(current.permission ?? [], ctx.payload.permission),
         })
       }
-      if (ctx.payload.time?.archived !== undefined) {
-        yield* session.setArchived({ sessionID: ctx.params.sessionID, time: ctx.payload.time.archived })
+      // A timestamp archives, an explicit null unarchives, an omitted field leaves it alone.
+      const archived = ctx.payload.time?.archived
+      if (archived !== undefined) {
+        yield* session.setArchived({ sessionID: ctx.params.sessionID, time: archived ?? undefined })
       }
       return yield* requireSession(ctx.params.sessionID)
     })
