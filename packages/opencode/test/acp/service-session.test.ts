@@ -210,9 +210,11 @@ describe("ACP service sessions", () => {
       }>
       prompt?: (input: unknown) => Promise<{ data: { info: ReturnType<typeof assistantInfo> } }>
       sessionUpdate?: (update: SessionNotification) => Promise<void>
+      agents?: readonly { name: string; mode: string; description?: string; hidden?: boolean }[]
     },
   ) => {
     const updates: SessionNotification[] = []
+    const creates: unknown[] = []
     const mcpAdds: string[] = []
     const aborts: string[] = []
     const forks: string[] = []
@@ -238,11 +240,13 @@ describe("ACP service sessions", () => {
       app: {
         agents: () =>
           Promise.resolve({
-            data: [
-              { name: "build", mode: "primary", permission: [], options: {} },
-              { name: "plan", mode: "primary", description: "Plan first", permission: [], options: {} },
-              { name: "hidden", mode: "primary", hidden: true, permission: [], options: {} },
-            ],
+            data: (
+              options?.agents ?? [
+                { name: "build", mode: "primary" },
+                { name: "plan", mode: "primary", description: "Plan first" },
+                { name: "hidden", mode: "primary", hidden: true },
+              ]
+            ).map((agent) => ({ ...agent, permission: [], options: {} })),
           }),
         skills: () =>
           Promise.resolve({
@@ -256,7 +260,10 @@ describe("ACP service sessions", () => {
           }),
       },
       session: {
-        create: () => Promise.resolve({ data: { id: "ses_new" } }),
+        create: (input: unknown) => {
+          creates.push(input)
+          return Promise.resolve({ data: { id: "ses_new" } })
+        },
         get: options?.get ?? (() => Promise.resolve({ data: { id: "ses_loaded" } })),
         list: (input: { directory?: string }) =>
           Promise.resolve({
@@ -336,6 +343,7 @@ describe("ACP service sessions", () => {
     return {
       service: ACPService.make({ sdk, connection, usage }),
       updates,
+      creates,
       mcpAdds,
       aborts,
       forks,
@@ -1613,6 +1621,95 @@ describe("ACP service sessions", () => {
     )
 
     expect(error.code).toBe(-32000)
+  })
+
+  // T-17 / HOST-12: the profile a session runs under reaches the engine over ACP, stays put for
+  // later prompts, and comes back when the session is loaded by a new engine process.
+  const profileAgents = [
+    { name: "default", mode: "primary", description: "The product default agent." },
+    { name: "locked_down", mode: "primary", description: "Allowlist profile" },
+    { name: "build", mode: "primary" },
+  ]
+
+  it("T-17: newSession binds the session to the default profile", async () => {
+    const { service, creates } = makeService([], { agents: profileAgents })
+    const result = await Effect.runPromise(service.newSession({ cwd: "/workspace", mcpServers: [] }))
+
+    expect(select(result, "mode")?.currentValue).toBe("default")
+    expect(creates).toHaveLength(1)
+    expect(creates[0]).toMatchObject({ agent: "default" })
+  })
+
+  it("T-17: newSession accepts a profile through _meta and rejects an unknown one", async () => {
+    const { service, creates } = makeService([], { agents: profileAgents })
+    const result = await Effect.runPromise(
+      service.newSession({ cwd: "/workspace", mcpServers: [], _meta: { mode: "locked_down" } }),
+    )
+
+    expect(select(result, "mode")?.currentValue).toBe("locked_down")
+    expect(creates[0]).toMatchObject({ agent: "locked_down" })
+
+    const { service: other } = makeService([], { agents: profileAgents })
+    const error = await Effect.runPromise(
+      other
+        .newSession({ cwd: "/workspace", mcpServers: [], _meta: { mode: "no_such_profile" } })
+        .pipe(Effect.mapError(ACPError.toRequestError), Effect.flip),
+    )
+    expect(JSON.stringify(error)).toContain("no_such_profile")
+  })
+
+  it("T-17: setSessionMode sticks for every later prompt", async () => {
+    const { service, prompts } = makeService([], { agents: profileAgents })
+    const session = await Effect.runPromise(service.newSession({ cwd: "/workspace", mcpServers: [] }))
+
+    await Effect.runPromise(service.setSessionMode({ sessionId: session.sessionId, modeId: "locked_down" }))
+    await Effect.runPromise(service.prompt({ sessionId: session.sessionId, prompt: [{ type: "text", text: "first" }] }))
+    await Effect.runPromise(
+      service.prompt({ sessionId: session.sessionId, prompt: [{ type: "text", text: "second" }] }),
+    )
+
+    expect(prompts).toHaveLength(2)
+    for (const prompt of prompts) expect(prompt).toMatchObject({ agent: "locked_down" })
+  })
+
+  it("T-17: setSessionMode rejects a profile the directory does not have", async () => {
+    const { service } = makeService([], { agents: profileAgents })
+    const session = await Effect.runPromise(service.newSession({ cwd: "/workspace", mcpServers: [] }))
+
+    const error = await Effect.runPromise(
+      service
+        .setSessionMode({ sessionId: session.sessionId, modeId: "no_such_profile" })
+        .pipe(Effect.mapError(ACPError.toRequestError), Effect.flip),
+    )
+    expect(JSON.stringify(error)).toContain("no_such_profile")
+  })
+
+  it("T-17: loadSession restores the profile the session was bound to", async () => {
+    const { service } = makeService([], {
+      agents: profileAgents,
+      get: () =>
+        Promise.resolve({
+          data: {
+            id: "ses_loaded",
+            agent: "locked_down",
+            model: { providerID: "test", id: "test-model" },
+          },
+        }),
+    })
+    const result = await Effect.runPromise(
+      service.loadSession({ cwd: "/workspace", sessionId: "ses_loaded", mcpServers: [] }),
+    )
+
+    expect(select(result, "mode")?.currentValue).toBe("locked_down")
+  })
+
+  it("T-17: loadSession falls back to the default profile when the session names none", async () => {
+    const { service } = makeService([], { agents: profileAgents })
+    const result = await Effect.runPromise(
+      service.loadSession({ cwd: "/workspace", sessionId: "ses_loaded", mcpServers: [] }),
+    )
+
+    expect(select(result, "mode")?.currentValue).toBe("default")
   })
 })
 

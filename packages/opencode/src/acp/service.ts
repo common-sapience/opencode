@@ -165,7 +165,11 @@ export function make(input: {
     const snapshot = yield* directorySnapshot(params.cwd)
     const selected = selectDefaultModel(snapshot)
     const variant = selectVariant(snapshot, selected)
-    const modeId = snapshot.availableModes.length > 0 ? snapshot.defaultModeID : undefined
+    const requested = requestedMode(params)
+    if (requested !== undefined && !hasMode(snapshot, requested)) {
+      return yield* new ACPError.InvalidModeError({ mode: requested })
+    }
+    const modeId = requested ?? (snapshot.availableModes.length > 0 ? snapshot.defaultModeID : undefined)
     const created = yield* profiledRequest(
       "acp.newSession.session.create",
       () =>
@@ -1149,6 +1153,15 @@ function hasModel(snapshot: Directory.Snapshot, model: Directory.DefaultModel) {
 
 function hasMode(snapshot: Directory.Snapshot, modeId: string | undefined) {
   return Boolean(modeId && snapshot.availableModes.some((mode) => mode.id === modeId))
+}
+
+// Lets a client bind the session to an agent in the newSession call instead of a follow-up
+// setSessionMode. An unknown name fails the call rather than falling back to the default agent.
+function requestedMode(params: NewSessionRequest) {
+  const mode = params._meta?.["mode"]
+  if (mode === undefined || mode === null) return undefined
+  if (typeof mode !== "string" || mode.length === 0) return ""
+  return mode
 }
 
 function sameModel(left: Directory.DefaultModel, right: Directory.DefaultModel | undefined) {
