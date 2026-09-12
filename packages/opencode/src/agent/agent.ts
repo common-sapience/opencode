@@ -126,18 +126,45 @@ const layer = Layer.effect(
           question: "deny",
           plan_enter: "deny",
           plan_exit: "deny",
-          // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
           read: {
             "*": "allow",
+          },
+        })
+
+        // Credential files stay protected whatever the user ruleset allows, so these rules are
+        // merged after it rather than with the rest of the defaults. A blanket `"*": "allow"`
+        // (how the host expresses "confirmation off") must not turn them into an allow.
+        // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
+        const sensitive = Permission.fromConfig({
+          read: {
             "*.env": "ask",
             "*.env.*": "ask",
             "*.env.example": "allow",
           },
         })
 
+        // A blanket deny has to stay the last rule or the tools it hides become visible again.
+        const denyAll = Permission.fromConfig({ "*": "deny" })
+
         const user = Permission.fromConfig(cfg.permission ?? {})
 
         const agents: Record<string, Info> = {
+          default: {
+            name: "default",
+            description: "The product default agent. Every tool and skill is available.",
+            options: {},
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                question: "allow",
+                plan_enter: "allow",
+              }),
+              user,
+              sensitive,
+            ),
+            mode: "primary",
+            native: true,
+          },
           build: {
             name: "build",
             description: "The default agent. Executes tools based on configured permissions.",
@@ -149,6 +176,7 @@ const layer = Layer.effect(
                 plan_enter: "allow",
               }),
               user,
+              sensitive,
             ),
             mode: "primary",
             native: true,
@@ -175,6 +203,7 @@ const layer = Layer.effect(
                 },
               }),
               user,
+              sensitive,
             ),
             mode: "primary",
             native: true,
@@ -188,6 +217,7 @@ const layer = Layer.effect(
                 todowrite: "deny",
               }),
               user,
+              sensitive,
             ),
             options: {},
             mode: "subagent",
@@ -209,6 +239,7 @@ const layer = Layer.effect(
                 external_directory: readonlyExternalDirectory,
               }),
               user,
+              sensitive,
             ),
             description: `Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.`,
             prompt: PROMPT_EXPLORE,
@@ -222,13 +253,7 @@ const layer = Layer.effect(
             native: true,
             hidden: true,
             prompt: PROMPT_COMPACTION,
-            permission: Permission.merge(
-              defaults,
-              Permission.fromConfig({
-                "*": "deny",
-              }),
-              user,
-            ),
+            permission: Permission.merge(defaults, user, sensitive, denyAll),
             options: {},
           },
           title: {
@@ -238,13 +263,7 @@ const layer = Layer.effect(
             native: true,
             hidden: true,
             temperature: 0.5,
-            permission: Permission.merge(
-              defaults,
-              Permission.fromConfig({
-                "*": "deny",
-              }),
-              user,
-            ),
+            permission: Permission.merge(defaults, user, sensitive, denyAll),
             prompt: PROMPT_TITLE,
           },
           summary: {
@@ -253,13 +272,7 @@ const layer = Layer.effect(
             options: {},
             native: true,
             hidden: true,
-            permission: Permission.merge(
-              defaults,
-              Permission.fromConfig({
-                "*": "deny",
-              }),
-              user,
-            ),
+            permission: Permission.merge(defaults, user, sensitive, denyAll),
             prompt: PROMPT_SUMMARY,
           },
         }
@@ -274,7 +287,9 @@ const layer = Layer.effect(
             item = agents[key] = {
               name: key,
               mode: "all",
-              permission: Permission.merge(defaults, user),
+              // A profile that selects nothing has every tool and skill, asking the user
+              // included; narrowing is what its own rules are for (ENG-18).
+              permission: Permission.merge(defaults, Permission.fromConfig({ question: "allow" }), user, sensitive),
               options: {},
               native: false,
             }
@@ -318,10 +333,7 @@ const layer = Layer.effect(
           return pipe(
             agents,
             values(),
-            sortBy(
-              [(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "build"), "desc"],
-              [(x) => x.name, "asc"],
-            ),
+            sortBy([(x) => x.name === (cfg.default_agent ?? "default"), "desc"], [(x) => x.name, "asc"]),
           )
         })
 
