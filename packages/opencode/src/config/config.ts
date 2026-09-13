@@ -161,6 +161,23 @@ function patchJsonc(input: string, patch: unknown, path: string[] = []): string 
   return Object.entries(patch).reduce((result, [key, value]) => patchJsonc(result, value, [...path, key]), input)
 }
 
+// A `{env:VAR}` that has no value substitutes to an empty string, so an unresolved variable inside a
+// local MCP server's command would spawn something else entirely (`node ""` starts a REPL, and an
+// empty argument can shift the meaning of the ones after it). Such a server is refused rather than
+// started, the way a half-resolved command should fail (ENG-04).
+const disableUnresolvedLocalMcp = Effect.fnUntraced(function* (info: Info) {
+  for (const [key, server] of Object.entries(info.mcp ?? {})) {
+    if (!("type" in server) || server.type !== "local" || server.enabled === false) continue
+    const blank = server.command.findIndex((argument: string) => argument.trim() === "")
+    if (blank < 0) continue
+    server.enabled = false
+    yield* Effect.logWarning("disabling MCP server: its command has an argument that resolved to nothing", {
+      key,
+      argument: blank,
+    })
+  }
+})
+
 function writable(info: Info) {
   const { plugin_origins: _plugin_origins, ...next } = info
   return next
@@ -404,7 +421,7 @@ const layer = Layer.effect(
         const deps: Fiber.Fiber<void>[] = []
 
         for (const dir of directories) {
-          if (dir.endsWith(".opencode") || dir === Flag.OPENCODE_CONFIG_DIR) {
+          if (ConfigPaths.isConfigDirectory(dir)) {
             for (const file of ["opencode.json", "opencode.jsonc"]) {
               const source = path.join(dir, file)
               yield* Effect.logDebug(`loading config from ${source}`)
@@ -522,6 +539,8 @@ const layer = Layer.effect(
         if (result.autoshare === true && !result.share) {
           result.share = "auto"
         }
+
+        yield* disableUnresolvedLocalMcp(result)
 
         if (Flag.OPENCODE_DISABLE_AUTOCOMPACT) {
           result.compaction = { ...result.compaction, auto: false }

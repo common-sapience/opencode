@@ -1,25 +1,46 @@
 # Product configuration
 
-This directory is the product's managed configuration: the config fragment, the product skills and
-the product agent profiles that ship with the desktop package. It is data, not code — nothing here
-is imported, it is discovered by the engine's normal configuration mechanisms.
+This directory is the product's managed configuration: the config file, the product skills and the
+product agent profiles that ship with the desktop package. It is data, not code — nothing here is
+imported, it is discovered by the engine's normal configuration mechanisms.
 
 ```
-opencode.json        managed config fragment: instructions, skills, permission baseline
+opencode.json        managed config: instructions, skills, the browser MCP server, permission baseline
 agent/dream.md       the memory consolidation profile and its allowlist
 skills/memory/       how an agent saves a memory (ENG-19, RULE-11)
 skills/dream/        the four-phase consolidation pass the dream profile runs
 ```
 
-## What the host must do
+## Zero configuration
 
-The daemon starts the engine as `opencode acp` and sets these environment variables:
+The product has to work on a fresh install with nothing set (ENG-04, ENG-19), so the engine finds
+this directory itself: `src/config/product.ts` resolves it next to the engine — the package directory
+in a source checkout, the executable's own directory once compiled — adds it to the configuration
+directories, and writes every variable the file below substitutes into the environment _before_ any
+configuration is read. An unset variable substitutes to an empty string, which would turn
+`{env:DIR}/*` into `/*` and `node {env:ENTRY}` into `node ""`, so none of them is ever left empty.
 
-| Variable | Value | Why |
-| --- | --- | --- |
-| `OPENCODE_CONFIG_DIR` | absolute path of this directory | makes it a configuration directory, so `opencode.json`, `agent/*.md` and `skills/*/SKILL.md` are all discovered. It is *added to* the XDG configuration directory, it does not replace it. |
-| `HARNESS_PRODUCT_DIR` | the same path | `skills.paths` needs an absolute path; configuration values cannot be written relative to the configuration file. |
-| `HARNESS_MEMORY_DIR` | absolute path of the shared memory directory | the memory index and the memory permission patterns are written against it. Optional: it defaults to `<XDG_DATA_HOME>/opencode/memory`, and the default is written back into the environment before any configuration is read, so the variable is never empty — an empty substitution would turn a `<dir>/*` rule into `/*`. |
+| Variable                       | Unset                                                                                                        | Set by                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `OPENCODE_CONFIG_DIR`          | this directory is added to the configuration directories, next to the XDG one                                | the host, only to use its own copy of this directory instead        |
+| `HARNESS_PRODUCT_DIR`          | this directory; `OPENCODE_CONFIG_DIR` when the host named one                                                | the host, only to split the two apart                               |
+| `HARNESS_MEMORY_DIR`           | `<XDG_DATA_HOME>/opencode/memory`, created on startup                                                        | the host, to put the shared memory elsewhere                        |
+| `HARNESS_BROWSER_MCP_ENTRY`    | the bin of the `chrome-devtools-mcp` installed next to the engine; the server is disabled when there is none | the host, to run a different build                                  |
+| `HARNESS_BROWSER_HEADLESS`     | `false`: a visible window, which is the product default                                                      | the host, `true` for a machine with no display                      |
+| `HARNESS_BROWSER_AUTO_CONNECT` | `false`: the server launches Chrome on its own persistent profile                                            | the host, `true` to attach to a Chrome the user already has running |
+
+So the daemon starts the engine as `opencode acp` and sets none of these. What it still owns is
+everything outside this directory: the platform API key (HOST-09), the session's profile and the
+permission switch (HOST-12), connector MCP configuration (HOST-11), and triggering the consolidation
+pass below (T-15).
+
+A built bundle is the one case that needs care: the engine locates both this directory and the
+browser package relative to the executable, so `product/` and `node_modules/chrome-devtools-mcp` have
+to ship next to it. Only an entry path that exists is passed on, and an explicit one is never replaced
+by another build: a host that names a file it does not have gets no browser rather than a different
+browser. With nothing to pass on the command would carry an empty argument, and the engine refuses to
+start a server whose command did not fully resolve rather than spawning `node ""` — browser tools are
+then absent instead of broken.
 
 The memory directory holds `MEMORY.md` plus one file per fact. The engine creates it if it is
 missing. It never leaves the machine.
@@ -30,8 +51,13 @@ missing. It never leaves the machine.
   system prompt. Instructions are resolved per session, not per profile, which is what makes one
   memory shared by every profile (RULE-11).
 - `skills.paths: ["{env:HARNESS_PRODUCT_DIR}/skills"]` — registers the product skills. Redundant by
-  design: `OPENCODE_CONFIG_DIR` already makes `skills/*/SKILL.md` discoverable, and the explicit
-  path keeps them working if the host points the configuration directory elsewhere.
+  design: being a configuration directory already makes `skills/*/SKILL.md` discoverable, and the
+  explicit path keeps them working if the host points the configuration directory elsewhere.
+- `mcp.browser` — browser use (ENG-04): the product ships `chrome-devtools-mcp` (a pinned dependency
+  of this package, so nothing is fetched at run time) and runs it with Node against the Chrome the
+  user already has installed. The server exposes its tools to the model as `browser_*`, for example
+  `browser_navigate_page` and `browser_take_snapshot`. Nothing in the product interface offers a
+  choice of server (T-04).
 - `permission.external_directory` — the memory directory sits outside the session's worktree, so
   every tool that touches it passes this gate first. Allowing it is what lets the memory skill write
   without a prompt, and it is the only rule that can name the directory by absolute path for all
@@ -86,3 +112,10 @@ These are known gaps, not oversights. Each one needs a mechanism this directory 
   resolves them the same way, so the index reaches subagent prompts too. ENG-19 wants it kept out of
   them; until that is expressible, the `memory` skill carries the rule behaviourally (a subagent
   neither receives memory content in its prompt nor saves memories).
+- **The engine writes into its own configuration directory.** A configuration directory gets a
+  `.gitignore` and a background `@opencode-ai/plugin` install, this one included. Both failures are
+  logged and otherwise ignored, so a read-only install still works; the `.gitignore` that would be
+  written is checked in so a source checkout stays clean.
+- **browser use needs a Chrome on the machine.** The server drives the user's installed Chrome rather
+  than downloading one (TD-14), so there is nothing to fall back on when none is installed;
+  `playwright-mcp` is the noted alternative for that case (T-04).

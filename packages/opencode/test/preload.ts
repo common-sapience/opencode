@@ -49,6 +49,13 @@ process.env["OPENCODE_TEST_HOME"] = testHome
 const testManagedConfigDir = path.join(dir, "managed")
 process.env["OPENCODE_TEST_MANAGED_CONFIG_DIR"] = testManagedConfigDir
 
+// The engine adds its own shipped product/ directory to the configuration directories when nothing
+// points elsewhere (ENG-04, ENG-19), so point the tests at an empty one. Only test/product drives the
+// shipped configuration, and it says so explicitly.
+const testProductDir = path.join(dir, "product")
+await fs.mkdir(testProductDir, { recursive: true })
+process.env["HARNESS_PRODUCT_DIR"] = testProductDir
+
 // Write the cache version file to prevent global/index.ts from clearing the cache
 const cacheDir = path.join(dir, "cache", "opencode")
 await fs.mkdir(cacheDir, { recursive: true })
