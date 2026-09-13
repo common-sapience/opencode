@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "default",
+  "instructions": ["{env:HARNESS_MEMORY_DIR}/MEMORY.md"],
+  "skills": {
+    "paths": ["{env:HARNESS_PRODUCT_DIR}/skills"]
+  },
+  "permission": {
+    "external_directory": {
+      "{env:HARNESS_MEMORY_DIR}/*": "allow"
+    },
+    "read": {
+      "*{env:HARNESS_MEMORY_DIR}/*": "allow"
+    },
+    "edit": {
+      "*{env:HARNESS_MEMORY_DIR}/*": "allow"
+    },
+    "bash": {
+      "*{env:HARNESS_MEMORY_DIR}*": "deny"
+    }
+  }
+}

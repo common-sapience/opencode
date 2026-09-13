@@ -135,11 +135,19 @@ const layer = Layer.effect(
         // merged after it rather than with the rest of the defaults. A blanket `"*": "allow"`
         // (how the host expresses "confirmation off") must not turn them into an allow.
         // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
+        // ENG-19 / PERM-04: the memory directory is the agents' shared memory, and the file tools
+        // following the memory skill are its only write path. A shell command that names the
+        // directory is refused, and the rule sits in this ruleset so the blanket allow cannot
+        // widen it either. The pattern matches the command text, which is what the shell tool
+        // asks on.
         const sensitive = Permission.fromConfig({
           read: {
             "*.env": "ask",
             "*.env.*": "ask",
             "*.env.example": "allow",
+          },
+          bash: {
+            [`*${Global.Path.memory}*`]: "deny",
           },
         })
 
