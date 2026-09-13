@@ -32,6 +32,7 @@ import { ConfigManaged } from "./managed"
 import { ConfigParse } from "./parse"
 import { ConfigPaths } from "./paths"
 import { ConfigPlugin } from "./plugin"
+import { Product } from "./product"
 import { ConfigVariable } from "./variable"
 import { ConfigV2Compat } from "./v2-compat"
 import { Npm } from "@opencode-ai/core/npm"
@@ -175,6 +176,18 @@ const disableUnresolvedLocalMcp = Effect.fnUntraced(function* (info: Info) {
       key,
       argument: blank,
     })
+  }
+})
+
+// The same hole on the provider side: a model keyed by `{env:MODEL_ID}` becomes a model whose id is
+// the empty string when the variable is unset. It is not selectable and it is not a model, so it is
+// dropped rather than offered. What is left is either the model another configuration layer named or
+// nothing at all, and an empty gateway is refused by name in `Provider`.
+const dropUnresolvedModels = Effect.fnUntraced(function* (info: Info) {
+  for (const [providerID, provider] of Object.entries(info.provider ?? {})) {
+    if (!provider.models || !("" in provider.models)) continue
+    delete provider.models[""]
+    yield* Effect.logDebug("dropping a model whose id resolved to nothing", { provider: providerID })
   }
 })
 
@@ -394,6 +407,24 @@ const layer = Layer.effect(
           }
         }
 
+        // Resolving the configuration directories is also what gives every variable the managed
+        // configuration substitutes a value, so it happens before the first file is read. The list
+        // itself is used further down.
+        const directories = yield* ConfigPaths.directories(ctx.directory, ctx.worktree)
+
+        // The shipped product configuration is the product's defaults, so it is the base every other
+        // configuration layers onto rather than the last word: the host's configuration directory and
+        // the user's global file both override it. That ordering is what lets a host point the engine
+        // at one gateway address while the same `platform` provider keeps the product's definition --
+        // two definitions of it merge instead of the later one being erased. The directory is still
+        // walked below for its skills, agents and commands.
+        const productDir = Product.directory()
+        if (productDir) {
+          for (const file of ConfigPaths.fileInDirectory(productDir, "opencode")) {
+            yield* merge(file, yield* loadFile(file, authEnv), "global")
+          }
+        }
+
         const global = Object.keys(authEnv).length ? yield* loadGlobal(authEnv) : yield* getGlobal()
         yield* merge(Global.Path.config, global, "global")
 
@@ -412,8 +443,6 @@ const layer = Layer.effect(
         result.mode = result.mode || {}
         result.plugin = result.plugin || []
 
-        const directories = yield* ConfigPaths.directories(ctx.directory, ctx.worktree)
-
         if (Flag.OPENCODE_CONFIG_DIR) {
           yield* Effect.logDebug("loading config from OPENCODE_CONFIG_DIR", { path: Flag.OPENCODE_CONFIG_DIR })
         }
@@ -421,7 +450,9 @@ const layer = Layer.effect(
         const deps: Fiber.Fiber<void>[] = []
 
         for (const dir of directories) {
-          if (ConfigPaths.isConfigDirectory(dir)) {
+          // The product directory's own file was merged first, as the base; merging it again here
+          // would put it back on top and undo that.
+          if (ConfigPaths.isConfigDirectory(dir) && dir !== productDir) {
             for (const file of ["opencode.json", "opencode.jsonc"]) {
               const source = path.join(dir, file)
               yield* Effect.logDebug(`loading config from ${source}`)
@@ -541,6 +572,7 @@ const layer = Layer.effect(
         }
 
         yield* disableUnresolvedLocalMcp(result)
+        yield* dropUnresolvedModels(result)
 
         if (Flag.OPENCODE_DISABLE_AUTOCOMPACT) {
           result.compaction = { ...result.compaction, auto: false }

@@ -17,6 +17,17 @@ const BROWSER_AUTO_CONNECT = "HARNESS_BROWSER_AUTO_CONNECT"
 
 const BROWSER_PACKAGE = "chrome-devtools-mcp"
 
+/**
+ * The model gateway the product ships (ENG-12, RULE-02). Its address, key and model id are the one
+ * part of the managed configuration that has no default: they identify a user's account on the
+ * platform, so the host injects them when it starts the engine (HOST-09) and `bootstrap` deliberately
+ * leaves them alone. A missing one is refused with its name, not carried into an empty baseURL.
+ */
+export const GATEWAY_PROVIDER = "platform"
+export const GATEWAY_BASE_URL = "MODEL_API_BASE_URL"
+export const GATEWAY_API_KEY = "MODEL_API_KEY"
+export const GATEWAY_MODEL_ID = "MODEL_ID"
+
 // The product is headed and launches its own Chrome unless the host says otherwise. The defaults are
 // written out rather than left unset so the managed config never emits a bare `--headless=`.
 const BROWSER_HEADLESS_DEFAULT = "false"
