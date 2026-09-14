@@ -5,7 +5,7 @@
 import { afterEach, expect } from "bun:test"
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { PermissionV1 } from "@opencode-ai/core/v1/permission"
-import { Effect, Layer } from "effect"
+import { Cause, Effect, Exit, Fiber, Layer } from "effect"
 import path from "path"
 import { Agent } from "../../src/agent/agent"
 import { Auth } from "../../src/auth"
@@ -65,6 +65,41 @@ function profile(name: string) {
 function action(ruleset: PermissionV1.Ruleset, permission: string, pattern = "*") {
   return Permission.evaluate(permission, pattern, ruleset).action
 }
+
+// One file per credential rule the product ships (PERM-04), spelled the way a tool would ask.
+const SECRET_FILES = [
+  "/work/.env",
+  "/work/.env.local",
+  "/work/.env.example",
+  "/work/certs/server.pem",
+  "/work/certs/server.key",
+  "/work/certs/bundle.p12",
+  "/work/certs/bundle.pfx",
+  "/home/user/.ssh/id_ed25519",
+  "/home/user/.gnupg/secring.gpg",
+  "/home/user/.aws/credentials",
+  "/home/user/.netrc",
+  "/home/user/.npmrc",
+  "/home/user/.local/share/opencode/auth.json",
+  "/home/user/.local/share/opencode/mcp-auth.json",
+]
+
+const waitForPending = (count: number) =>
+  Effect.gen(function* () {
+    const permission = yield* Permission.Service
+    return yield* Effect.gen(function* () {
+      while (true) {
+        const list = yield* permission.list()
+        if (list.length === count) return list
+        yield* Effect.sleep("10 millis")
+      }
+    }).pipe(
+      Effect.timeoutOrElse({
+        duration: "5 seconds",
+        orElse: () => Effect.fail(new Error(`timed out waiting for ${count} pending permission request(s)`)),
+      }),
+    )
+  })
 
 // The model only sees tools whose last matching rule is not a blanket deny.
 function hidden(agent: Agent.Info) {
@@ -340,26 +375,130 @@ it.instance("PERM-08: the permission switch off asks nothing for a bash and edit
   ),
 )
 
-it.instance("PERM-08: the sensitive file rule still applies with the permission switch off", () =>
+// PERM-04. A credential file is refused, not asked about, so the refusal does not depend on
+// anyone being there to answer: with the switch off (a blanket allow) an `ask` would be let
+// through on the spot, and with it on the refusal would be one answer away.
+it.instance("PERM-04: credential files are denied with the permission switch off", () =>
   withPermissionEnv(
     JSON.stringify({ "*": "allow" }),
     Effect.gen(function* () {
       const agent = yield* profile("default")
       expect(action(agent!.permission, "bash")).toBe("allow")
       expect(action(agent!.permission, "read", "/work/src/index.ts")).toBe("allow")
-      expect(action(agent!.permission, "read", "/work/.env")).toBe("ask")
-      expect(action(agent!.permission, "read", "/work/.env.local")).toBe("ask")
-      expect(action(agent!.permission, "read", "/work/.env.example")).toBe("allow")
+      for (const file of SECRET_FILES) {
+        expect(action(agent!.permission, "read", file)).toBe("deny")
+        expect(action(agent!.permission, "edit", file)).toBe("deny")
+      }
     }),
   ),
 )
 
+it.instance("PERM-04: credential files are denied with the permission switch on", () =>
+  Effect.gen(function* () {
+    const agent = yield* profile("default")
+    expect(action(agent!.permission, "read", "/work/src/index.ts")).toBe("allow")
+    for (const file of SECRET_FILES) {
+      expect(action(agent!.permission, "read", file)).toBe("deny")
+      expect(action(agent!.permission, "edit", file)).toBe("deny")
+    }
+  }),
+)
+
+// The file tools ask on the path relative to the worktree, so the relative and the `../` spelling
+// of the same file have to be refused too, not only the absolute one.
+it.instance("PERM-04: the deny follows the path spelling the file tools ask with", () =>
+  Effect.gen(function* () {
+    const agent = yield* profile("default")
+    for (const spelling of [".env", "../.env", "../../home/user/.ssh/id_ed25519", "config/service.pem"]) {
+      expect(action(agent!.permission, "read", spelling)).toBe("deny")
+    }
+  }),
+)
+
 it.instance(
-  "PERM-08: the sensitive file rule survives a blanket allow in the config",
+  "PERM-04: a blanket allow in the user config does not reopen a credential file",
   () =>
     Effect.gen(function* () {
       const agent = yield* profile("default")
-      expect(action(agent!.permission, "read", "/work/.env")).toBe("ask")
+      expect(action(agent!.permission, "read", "/work/.env")).toBe("deny")
+      expect(action(agent!.permission, "edit", "/work/.env")).toBe("deny")
     }),
-  { config: { permission: { "*": "allow" } } },
+  { config: { permission: { "*": "allow", read: "allow", edit: "allow" } } },
+)
+
+it.instance(
+  "PERM-04: a profile that allows reading everything does not reopen a credential file",
+  () =>
+    Effect.gen(function* () {
+      const agent = yield* profile("wide_open")
+      expect(action(agent!.permission, "read", "/work/src/index.ts")).toBe("allow")
+      expect(action(agent!.permission, "read", "/work/.env")).toBe("deny")
+      expect(action(agent!.permission, "edit", "/work/.env")).toBe("deny")
+    }),
+  { config: { agent: { wide_open: { permission: { "*": "allow", read: "allow", edit: "allow" } } } } },
+)
+
+// An allowlist profile still hides the tools it did not allow: the credential rules are appended
+// after it, and a ruleset of denies must not make a denied tool visible again (ENG-18).
+it.instance(
+  "PERM-04: appending the credential rules leaves an allowlist profile's hidden tools hidden",
+  () =>
+    Effect.gen(function* () {
+      const agent = yield* profile("allowlist")
+      expect(hidden(agent!)).toContain("edit")
+      expect(hidden(agent!)).toContain("write")
+      expect(hidden(agent!)).toContain("bash")
+      expect(hidden(agent!)).not.toContain("read")
+    }),
+  {
+    config: {
+      agent: {
+        allowlist: {
+          permission: { "*": "deny", read: "allow", grep: "allow", glob: "allow" },
+        },
+      },
+    },
+  },
+)
+
+// PERM-04's "not overridable by always allow". The read and edit tools ask with `always: ["*"]`,
+// so one "always" answer on an ordinary file would otherwise approve every path for that tool.
+it.instance(
+  "PERM-04: an always answer for the read tool does not reopen a credential file",
+  () =>
+    Effect.gen(function* () {
+      const agent = yield* profile("asks_to_read")
+      const permission = yield* Permission.Service
+      const sessionID = SessionID.make("ses_perm04_always")
+      const fiber = yield* permission
+        .ask({
+          id: PermissionV1.ID.make("per_perm04_always"),
+          sessionID,
+          permission: "read",
+          patterns: ["notes.txt"],
+          always: ["*"],
+          metadata: {},
+          ruleset: agent!.permission,
+        })
+        .pipe(Effect.forkScoped)
+      yield* waitForPending(1)
+      yield* permission.reply({ requestID: PermissionV1.ID.make("per_perm04_always"), reply: "always" })
+      yield* Fiber.join(fiber)
+
+      // The same tool, now approved for every pattern, still cannot reach the credential file.
+      const exit = yield* permission
+        .ask({
+          sessionID,
+          permission: "read",
+          patterns: [".env"],
+          always: ["*"],
+          metadata: {},
+          ruleset: agent!.permission,
+        })
+        .pipe(Effect.exit)
+      if (!Exit.isFailure(exit)) throw new Error("the credential file was not refused")
+      expect(Cause.squash(exit.cause)).toBeInstanceOf(PermissionV1.DeniedError)
+      expect(yield* permission.list()).toEqual([])
+    }),
+  { config: { agent: { asks_to_read: { permission: { read: "ask" } } } } },
 )

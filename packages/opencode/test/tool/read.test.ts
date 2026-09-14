@@ -259,39 +259,40 @@ describe("tool.read external_directory permission", () => {
   )
 })
 
-describe("tool.read env file permissions", () => {
+// PERM-04: a credential file is refused outright, so the tool never gets to ask about it and the
+// content never reaches the caller. Names that only look like credential files are untouched.
+describe("tool.read credential file permissions", () => {
   const cases: [string, boolean][] = [
     [".env", true],
     [".env.local", true],
     [".env.production", true],
     [".env.development.local", true],
-    [".env.example", false],
+    [".env.example", true],
+    ["certs/service.pem", true],
+    ["certs/service.key", true],
     [".envrc", false],
     ["environment.ts", false],
+    ["notes.txt", false],
   ]
 
   for (const agentName of ["build", "plan"] as const) {
     describe(`agent=${agentName}`, () => {
-      for (const [filename, shouldAsk] of cases) {
-        it.live(`${filename} asks=${shouldAsk}`, () =>
+      for (const [filename, denied] of cases) {
+        it.live(`${filename} denied=${denied}`, () =>
           Effect.gen(function* () {
             const dir = yield* tmpdirScoped()
             yield* put(path.join(dir, filename), "content")
 
-            const asked = yield* provideInstance(dir)(
+            const outcome = yield* provideInstance(dir)(
               Effect.gen(function* () {
                 const agent = yield* Agent.Service
                 const info = yield* agent.get(agentName)
-                let asked = false
                 const next = {
                   ...ctx,
                   ask: (req: Omit<PermissionV1.Request, "id" | "sessionID" | "tool">) =>
                     Effect.sync(() => {
                       for (const pattern of req.patterns) {
                         const rule = Permission.evaluate(req.permission, pattern, info.permission)
-                        if (rule.action === "ask" && req.permission === "read") {
-                          asked = true
-                        }
                         if (rule.action === "deny") {
                           throw new PermissionV1.DeniedError({ ruleset: info.permission })
                         }
@@ -299,12 +300,12 @@ describe("tool.read env file permissions", () => {
                     }),
                 }
 
-                yield* run({ filePath: path.join(dir, filename) }, next)
-                return asked
+                return yield* run({ filePath: path.join(dir, filename) }, next).pipe(Effect.exit)
               }),
             )
 
-            expect(asked).toBe(shouldAsk)
+            expect(Exit.isFailure(outcome)).toBe(denied)
+            if (!denied) expect((outcome as Exit.Success<{ output: string }>).value.output).toContain("content")
           }),
         )
       }
