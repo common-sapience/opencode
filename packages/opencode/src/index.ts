@@ -10,7 +10,6 @@ import { DebugCommand } from "./cli/cmd/debug"
 import { McpCommand } from "./cli/cmd/mcp"
 import { ExportCommand } from "./cli/cmd/export"
 import { ImportCommand } from "./cli/cmd/import"
-import { AcpCommand } from "./cli/cmd/acp"
 import { EOL } from "os"
 import { SessionCommand } from "./cli/cmd/session"
 import { DbCommand } from "./cli/cmd/db"
@@ -65,7 +64,6 @@ const cli = yargs(args)
   })
   .usage("")
   .completion("completion", "generate shell completion script")
-  .command(AcpCommand)
   .command(ServeCommand)
   .command(McpCommand)
   .command(AgentCommand)

@@ -43,7 +43,6 @@ function normalize(text: string): string {
 // `completion` is intentionally excluded — it's a yargs built-in that emits
 // top-level help on `--help` and exits 1; not a real opencode command.
 const TOP_LEVEL = [
-  "acp",
   "serve",
   "mcp",
   "agent",
@@ -86,7 +85,6 @@ describe("opencode CLI help-text snapshots", () => {
         const topLevel = yield* opencode.spawn(["--help"], { env: SNAPSHOT_ENV })
         expect(topLevel.exitCode).toBe(0)
         expect(topLevel.stderr.endsWith("\n")).toBe(true)
-        expect(topLevel.stderr).toContain("acp")
         expect(topLevel.stderr).toContain("serve")
         // The terminal interface and the vendor-facing commands are not part of this build.
         for (const gone of ["tui", "attach", "run", "web", "upgrade", "uninstall", "providers", "models", "stats", "github", "pr", "plugin"]) {
