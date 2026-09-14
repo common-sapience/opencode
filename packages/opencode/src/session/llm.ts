@@ -6,7 +6,7 @@ import { SessionV1 } from "@opencode-ai/core/v1/session"
 import { serviceUse } from "@opencode-ai/core/effect/service-use"
 import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
-import { streamText, wrapLanguageModel, type ModelMessage, type Tool } from "ai"
+import { simulateStreamingMiddleware, streamText, wrapLanguageModel, type ModelMessage, type Tool } from "ai"
 import type { LLMEvent } from "@opencode-ai/llm"
 import { LLMClient } from "@opencode-ai/llm/route"
 import type { LLMClientService } from "@opencode-ai/llm/route"
@@ -339,6 +339,11 @@ const live: Layer.Layer<
                   return args.params
                 },
               },
+              // A gateway that rejects `stream: true` (the product's platform gateway does) is asked for
+              // one completion and the answer is replayed as a stream, so the loop above it is unchanged.
+              // The provider declares it with `streaming: false` in its options; the middleware is last
+              // so the message transform above still sees a stream request.
+              ...(item.options?.streaming === false ? [simulateStreamingMiddleware()] : []),
             ],
           }),
           experimental_telemetry: {

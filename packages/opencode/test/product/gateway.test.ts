@@ -101,6 +101,8 @@ it.instance("the shipped configuration is the gateway: address, key and model co
       expect(provider?.npm).toBe("@ai-sdk/openai-compatible")
       expect(provider?.options?.["baseURL"]).toBe(BASE_URL)
       expect(provider?.options?.["apiKey"]).toBe(API_KEY)
+      // The platform gateway answers only complete responses (no stream), so the product declares it.
+      expect(provider?.options?.["streaming"]).toBe(false)
 
       // The model id is a key, and `{env:...}` is substituted in the configuration text before it is
       // parsed, so a key carries a variable the same way a value does. That is what keeps the model

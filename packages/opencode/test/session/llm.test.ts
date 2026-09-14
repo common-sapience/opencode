@@ -824,6 +824,80 @@ describe("session.llm.stream", () => {
   )
 
   it.instance(
+    "asks a non-streaming gateway for a single completion when the provider declares streaming off",
+    () =>
+      Effect.gen(function* () {
+        const fixture = loadFixture(vivgridFixture.providerID, vivgridFixture.modelID)
+        const request = waitRequest(
+          "/chat/completions",
+          new Response(
+            JSON.stringify({
+              id: "chatcmpl-1",
+              object: "chat.completion",
+              created: 0,
+              model: fixture.model.id,
+              choices: [{ index: 0, message: { role: "assistant", content: "Hello" }, finish_reason: "stop" }],
+              usage: { prompt_tokens: 3, completion_tokens: 1, total_tokens: 4 },
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        )
+        const resolved = yield* Provider.use.getModel(
+          ProviderV2.ID.make(opencodeFixture.providerID),
+          ModelV2.ID.make(opencodeFixture.modelID),
+        )
+        const sessionID = SessionID.make("session-no-stream")
+        const agent = {
+          name: "test",
+          mode: "primary",
+          options: {},
+          permission: [{ permission: "*", pattern: "*", action: "allow" }],
+        } satisfies Agent.Info
+        const user = {
+          id: MessageID.make("msg_user-no-stream"),
+          sessionID,
+          role: "user",
+          time: { created: Date.now() },
+          agent: agent.name,
+          model: {
+            providerID: ProviderV2.ID.make(opencodeFixture.providerID),
+            modelID: resolved.id,
+          },
+        } satisfies SessionV1.User
+
+        yield* drain({
+          user,
+          sessionID,
+          model: resolved,
+          agent,
+          system: ["You are a helpful assistant."],
+          messages: [{ role: "user", content: "Hello" }],
+          tools: {},
+        })
+
+        const body = (yield* Effect.promise(() => request)).body
+        expect(body.stream).not.toBe(true)
+        expect(body.stream_options).toBeUndefined()
+      }),
+    {
+      config: () => {
+        const fixture = loadFixture(vivgridFixture.providerID, vivgridFixture.modelID)
+        return {
+          enabled_providers: [opencodeFixture.providerID],
+          provider: {
+            [opencodeFixture.providerID]: {
+              name: "OpenCode Test",
+              npm: "@ai-sdk/openai-compatible",
+              models: { [fixture.model.id]: configModel(fixture.model) as ConfigModel },
+              options: { apiKey: "test-key", baseURL: `${state.server!.url.origin}/v1`, streaming: false },
+            },
+          },
+        }
+      },
+    },
+  )
+
+  it.instance(
     "sends temperature, tokens, and reasoning options for openai-compatible models",
     () =>
       Effect.gen(function* () {
