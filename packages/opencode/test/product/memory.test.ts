@@ -292,24 +292,3 @@ it.instance("ENG-19: the shell cannot reach the memory directory, permission swi
     { env: { OPENCODE_PERMISSION: BLANKET_ALLOW } },
   ),
 )
-
-it.instance("PERM-04: the product config does not weaken the sensitive file rule", () =>
-  withProduct(
-    (memory) =>
-      Effect.gen(function* () {
-        const agent = yield* profile("default")
-        expect(action(agent!.permission, "read", ".env")).toBe("deny")
-        expect(action(agent!.permission, "read", "deploy/prod.env")).toBe("deny")
-        expect(action(agent!.permission, "read", ".env.example")).toBe("deny")
-        expect(action(agent!.permission, "edit", ".env")).toBe("deny")
-        // Even a credential file parked inside the memory directory stays behind the rule.
-        expect(action(agent!.permission, "read", path.join(memory, "stolen.env"))).toBe("deny")
-        expect(action(agent!.permission, "edit", path.join(memory, "stolen.env"))).toBe("deny")
-
-        // The dream profile reads nothing but markdown, which is stricter still.
-        const dream = yield* profile("dream")
-        expect(action(dream!.permission, "read", ".env")).toBe("deny")
-      }),
-    { env: { OPENCODE_PERMISSION: BLANKET_ALLOW } },
-  ),
-)

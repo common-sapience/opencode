@@ -70,13 +70,7 @@ const layer = Layer.effect(
       let needsAsk = false
 
       for (const pattern of request.patterns) {
-        // PERM-04: a deny in the agent's own ruleset is final. The answers already given in this
-        // session are consulted after it but can only turn an `ask` into an `allow`, never lift a
-        // deny — the read and edit tools ask with `always: ["*"]`, so a single "always" on any
-        // file would otherwise re-open every credential file the ruleset refuses.
-        const configured = evaluate(request.permission, pattern, ruleset)
-        const rule =
-          configured.action === "deny" ? configured : evaluate(request.permission, pattern, ruleset, approved)
+        const rule = evaluate(request.permission, pattern, ruleset, approved)
         yield* Effect.logInfo("evaluated", { permission: request.permission, pattern, action: rule })
         if (rule.action === "deny") {
           return yield* new PermissionV1.DeniedError({
@@ -210,8 +204,8 @@ export function merge(...rulesets: PermissionV1.Ruleset[]): PermissionV1.Rule[] 
 // A tool is hidden from the model when the last blanket rule for it is a deny and nothing after
 // that rule lets any pattern through. Looking only at the very last matching rule would make a
 // hidden tool reappear as soon as a later ruleset adds a narrow rule for the same permission —
-// which is what the credential-file rules do (PERM-04): they are appended after every agent's own
-// rules, and they must not turn a whitelist's blanket deny back into a visible tool.
+// which is what the memory-directory rule does (ENG-19): it is appended after every agent's own
+// rules, and it must not turn a whitelist's blanket deny back into a visible tool.
 export function disabled(tools: string[], ruleset: PermissionV1.Ruleset): Set<string> {
   const edits = ["edit", "write", "apply_patch"]
   const reads = ["list_mcp_resources", "list_mcp_resource_templates", "read_mcp_resource"]

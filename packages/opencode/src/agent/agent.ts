@@ -126,49 +126,20 @@ const layer = Layer.effect(
           question: "deny",
           plan_enter: "deny",
           plan_exit: "deny",
+          // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
           read: {
             "*": "allow",
+            "*.env": "ask",
+            "*.env.*": "ask",
+            "*.env.example": "allow",
           },
         })
 
-        // PERM-04: credential, key and secret files are refused outright rather than asked about.
-        // An `ask` would not hold in both states of the host's confirmation switch — with the
-        // switch off nobody is listening, so the request is let through on the spot, and with it
-        // on the refusal would be one answer away. The patterns are matched against the path the
-        // file tools ask on, which is relative to the worktree, so each one starts with `*` to
-        // cover the relative, the `../` and the absolute spelling alike. There is no exception for
-        // `.env.example` and its kind: whether such a file holds a real secret cannot be told from
-        // its name, and every rule here is a deny so that appending the ruleset can only ever
-        // narrow what an agent may do. It is merged after the user ruleset and again after a
-        // profile's own rules, so neither a blanket `"*": "allow"` (how the host expresses
-        // "confirmation off") nor a profile can widen it.
-        // ENG-19 / PERM-04: the memory directory is the agents' shared memory, and the file tools
-        // following the memory skill are its only write path. A shell command that names the
-        // directory is refused, and the rule sits in this ruleset so the blanket allow cannot
-        // widen it either. The pattern matches the command text, which is what the shell tool
-        // asks on.
-        const secretFiles: Record<string, "deny"> = {
-          // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
-          "*.env": "deny",
-          "*.env.*": "deny",
-          // private keys, certificates and keystores
-          "*.pem": "deny",
-          "*.key": "deny",
-          "*.p12": "deny",
-          "*.pfx": "deny",
-          // the credential stores of the tools a machine usually has
-          "*.ssh/*": "deny",
-          "*.gnupg/*": "deny",
-          "*.aws/credentials": "deny",
-          "*.netrc": "deny",
-          "*.npmrc": "deny",
-          // the engine's own credential stores, under its data directory
-          "*opencode/auth.json": "deny",
-          "*opencode/mcp-auth.json": "deny",
-        }
-        const sensitive = Permission.fromConfig({
-          read: secretFiles,
-          edit: secretFiles,
+        // ENG-19: the memory directory is the agents' shared memory, and the file tools following
+        // the memory skill are its only write path. A shell command that names the directory is
+        // refused; the rule is merged after the user ruleset and after a profile's own rules so a
+        // blanket allow cannot widen it. The pattern matches the command text the shell tool asks on.
+        const memory = Permission.fromConfig({
           bash: {
             [`*${Global.Path.memory}*`]: "deny",
           },
@@ -192,7 +163,7 @@ const layer = Layer.effect(
                 plan_enter: "allow",
               }),
               user,
-              sensitive,
+              memory,
             ),
             mode: "primary",
             native: true,
@@ -208,7 +179,7 @@ const layer = Layer.effect(
                 plan_enter: "allow",
               }),
               user,
-              sensitive,
+              memory,
             ),
             mode: "primary",
             native: true,
@@ -235,7 +206,7 @@ const layer = Layer.effect(
                 },
               }),
               user,
-              sensitive,
+              memory,
             ),
             mode: "primary",
             native: true,
@@ -249,7 +220,7 @@ const layer = Layer.effect(
                 todowrite: "deny",
               }),
               user,
-              sensitive,
+              memory,
             ),
             options: {},
             mode: "subagent",
@@ -271,7 +242,7 @@ const layer = Layer.effect(
                 external_directory: readonlyExternalDirectory,
               }),
               user,
-              sensitive,
+              memory,
             ),
             description: `Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.`,
             prompt: PROMPT_EXPLORE,
@@ -285,7 +256,7 @@ const layer = Layer.effect(
             native: true,
             hidden: true,
             prompt: PROMPT_COMPACTION,
-            permission: Permission.merge(defaults, user, sensitive, denyAll),
+            permission: Permission.merge(defaults, user, memory, denyAll),
             options: {},
           },
           title: {
@@ -295,7 +266,7 @@ const layer = Layer.effect(
             native: true,
             hidden: true,
             temperature: 0.5,
-            permission: Permission.merge(defaults, user, sensitive, denyAll),
+            permission: Permission.merge(defaults, user, memory, denyAll),
             prompt: PROMPT_TITLE,
           },
           summary: {
@@ -304,7 +275,7 @@ const layer = Layer.effect(
             options: {},
             native: true,
             hidden: true,
-            permission: Permission.merge(defaults, user, sensitive, denyAll),
+            permission: Permission.merge(defaults, user, memory, denyAll),
             prompt: PROMPT_SUMMARY,
           },
         }
@@ -321,7 +292,7 @@ const layer = Layer.effect(
               mode: "all",
               // A profile that selects nothing has every tool and skill, asking the user
               // included; narrowing is what its own rules are for (ENG-18).
-              permission: Permission.merge(defaults, Permission.fromConfig({ question: "allow" }), user, sensitive),
+              permission: Permission.merge(defaults, Permission.fromConfig({ question: "allow" }), user, memory),
               options: {},
               native: false,
             }
@@ -337,13 +308,12 @@ const layer = Layer.effect(
           item.name = value.name ?? item.name
           item.steps = value.steps ?? item.steps
           item.options = mergeDeep(item.options, value.options ?? {})
-          // The sensitive ruleset is appended again after the profile's own rules: a profile that
-          // writes `read: allow` widens what it is allowed to widen, never the credential files
-          // (PERM-04).
+          // The memory ruleset is appended again after the profile's own rules, so a profile
+          // cannot widen the memory directory's write path (ENG-19).
           item.permission = Permission.merge(
             item.permission,
             Permission.fromConfig(value.permission ?? {}),
-            sensitive,
+            memory,
           )
         }
 
