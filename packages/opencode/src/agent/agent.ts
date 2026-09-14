@@ -131,27 +131,51 @@ const layer = Layer.effect(
           },
         })
 
-        // Credential files stay protected whatever the user ruleset allows, so these rules are
-        // merged after it rather than with the rest of the defaults. A blanket `"*": "allow"`
-        // (how the host expresses "confirmation off") must not turn them into an allow.
-        // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
+        // PERM-04: credential, key and secret files are refused outright rather than asked about.
+        // An `ask` would not hold in both states of the host's confirmation switch — with the
+        // switch off nobody is listening, so the request is let through on the spot, and with it
+        // on the refusal would be one answer away. The patterns are matched against the path the
+        // file tools ask on, which is relative to the worktree, so each one starts with `*` to
+        // cover the relative, the `../` and the absolute spelling alike. There is no exception for
+        // `.env.example` and its kind: whether such a file holds a real secret cannot be told from
+        // its name, and every rule here is a deny so that appending the ruleset can only ever
+        // narrow what an agent may do. It is merged after the user ruleset and again after a
+        // profile's own rules, so neither a blanket `"*": "allow"` (how the host expresses
+        // "confirmation off") nor a profile can widen it.
         // ENG-19 / PERM-04: the memory directory is the agents' shared memory, and the file tools
         // following the memory skill are its only write path. A shell command that names the
         // directory is refused, and the rule sits in this ruleset so the blanket allow cannot
         // widen it either. The pattern matches the command text, which is what the shell tool
         // asks on.
+        const secretFiles: Record<string, "deny"> = {
+          // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
+          "*.env": "deny",
+          "*.env.*": "deny",
+          // private keys, certificates and keystores
+          "*.pem": "deny",
+          "*.key": "deny",
+          "*.p12": "deny",
+          "*.pfx": "deny",
+          // the credential stores of the tools a machine usually has
+          "*.ssh/*": "deny",
+          "*.gnupg/*": "deny",
+          "*.aws/credentials": "deny",
+          "*.netrc": "deny",
+          "*.npmrc": "deny",
+          // the engine's own credential stores, under its data directory
+          "*opencode/auth.json": "deny",
+          "*opencode/mcp-auth.json": "deny",
+        }
         const sensitive = Permission.fromConfig({
-          read: {
-            "*.env": "ask",
-            "*.env.*": "ask",
-            "*.env.example": "allow",
-          },
+          read: secretFiles,
+          edit: secretFiles,
           bash: {
             [`*${Global.Path.memory}*`]: "deny",
           },
         })
 
-        // A blanket deny has to stay the last rule or the tools it hides become visible again.
+        // A blanket deny has to stay the last rule, so that nothing merged after it can let a
+        // pattern back through.
         const denyAll = Permission.fromConfig({ "*": "deny" })
 
         const user = Permission.fromConfig(cfg.permission ?? {})
@@ -313,7 +337,14 @@ const layer = Layer.effect(
           item.name = value.name ?? item.name
           item.steps = value.steps ?? item.steps
           item.options = mergeDeep(item.options, value.options ?? {})
-          item.permission = Permission.merge(item.permission, Permission.fromConfig(value.permission ?? {}))
+          // The sensitive ruleset is appended again after the profile's own rules: a profile that
+          // writes `read: allow` widens what it is allowed to widen, never the credential files
+          // (PERM-04).
+          item.permission = Permission.merge(
+            item.permission,
+            Permission.fromConfig(value.permission ?? {}),
+            sensitive,
+          )
         }
 
         // Ensure Truncate.GLOB is allowed unless explicitly configured

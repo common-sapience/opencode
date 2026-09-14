@@ -298,11 +298,13 @@ it.instance("PERM-04: the product config does not weaken the sensitive file rule
     (memory) =>
       Effect.gen(function* () {
         const agent = yield* profile("default")
-        expect(action(agent!.permission, "read", ".env")).toBe("ask")
-        expect(action(agent!.permission, "read", "deploy/prod.env")).toBe("ask")
-        expect(action(agent!.permission, "read", ".env.example")).toBe("allow")
+        expect(action(agent!.permission, "read", ".env")).toBe("deny")
+        expect(action(agent!.permission, "read", "deploy/prod.env")).toBe("deny")
+        expect(action(agent!.permission, "read", ".env.example")).toBe("deny")
+        expect(action(agent!.permission, "edit", ".env")).toBe("deny")
         // Even a credential file parked inside the memory directory stays behind the rule.
-        expect(action(agent!.permission, "read", path.join(memory, "stolen.env"))).toBe("ask")
+        expect(action(agent!.permission, "read", path.join(memory, "stolen.env"))).toBe("deny")
+        expect(action(agent!.permission, "edit", path.join(memory, "stolen.env"))).toBe("deny")
 
         // The dream profile reads nothing but markdown, which is stricter still.
         const dream = yield* profile("dream")

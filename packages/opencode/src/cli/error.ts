@@ -69,6 +69,13 @@ export function FormatError(input: unknown): string | undefined {
     ].join("\n")
   }
 
+  // ProviderGatewayNotConfiguredError: { missing: string[] }
+  const gateway = configData(input, "ProviderGatewayNotConfiguredError")
+  if (gateway) {
+    const missing = Array.isArray(gateway.missing) ? gateway.missing.filter((x) => typeof x === "string") : []
+    return `The model gateway is not configured: ${missing.join(", ")} ${missing.length === 1 ? "is" : "are"} not set in the engine's environment.`
+  }
+
   // ProviderInitError: { providerID: string }
   const providerInit = configData(input, "ProviderInitError")
   if (providerInit) {

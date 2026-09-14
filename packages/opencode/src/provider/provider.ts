@@ -3,6 +3,7 @@ import os from "os"
 import { ConfigV1 } from "@opencode-ai/core/v1/config/config"
 import fuzzysort from "fuzzysort"
 import { Config } from "@/config/config"
+import { Product } from "@/config/product"
 import { mapValues, mergeDeep, omit, pickBy, sortBy } from "remeda"
 import { NoSuchModelError, type Provider as SDK } from "ai"
 import { Npm } from "@opencode-ai/core/npm"
@@ -347,6 +348,23 @@ export class NoModelsError extends Schema.TaggedErrorClass<NoModelsError>()("Pro
   }
 }
 
+export class GatewayNotConfiguredError extends Schema.TaggedErrorClass<GatewayNotConfiguredError>()(
+  "ProviderGatewayNotConfiguredError",
+  {
+    missing: Schema.Array(Schema.String),
+  },
+) {
+  override get message() {
+    const names = this.missing.join(", ")
+    const verb = this.missing.length === 1 ? "is" : "are"
+    return `The model gateway is not configured: ${names} ${verb} not set in the engine's environment.`
+  }
+
+  static isInstance(input: unknown): input is GatewayNotConfiguredError {
+    return input instanceof GatewayNotConfiguredError
+  }
+}
+
 export type DefaultModelError = ModelNotFoundError | NoProvidersError | NoModelsError
 export type Error = ModelNotFoundError | InitError | NoProvidersError | NoModelsError
 
@@ -604,6 +622,26 @@ const layer = Layer.effect(
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
 
         const configured = new Set(configProviders.map(([id]) => id))
+
+        // ENG-12 / HOST-09: the address, key and model id of the platform gateway are the one part
+        // of the managed configuration with no default, because they identify a user's account; the
+        // host injects them when it starts the engine. A variable that resolved to nothing would
+        // otherwise reach the wire as an empty baseURL or an empty key and come back as a bare 401,
+        // or leave the provider with no model and the engine reporting that none is available. The
+        // gateway is refused here instead, with the variables that are missing named.
+        const gateway = ProviderV2.ID.make(Product.GATEWAY_PROVIDER)
+        const gatewayConfig = cfg.provider?.[gateway]
+        if (gatewayConfig && !disabled.has(gateway) && (!enabled || enabled.has(gateway))) {
+          const set = (key: string) => {
+            const value = gatewayConfig.options?.[key]
+            return typeof value === "string" && value.trim() !== ""
+          }
+          const missing: string[] = []
+          if (!set("baseURL")) missing.push(Product.GATEWAY_BASE_URL)
+          if (!set("apiKey")) missing.push(Product.GATEWAY_API_KEY)
+          if (!Object.keys(gatewayConfig.models ?? {}).length) missing.push(Product.GATEWAY_MODEL_ID)
+          if (missing.length) throw new GatewayNotConfiguredError({ missing })
+        }
 
         // ENG-12 / RULE-02: the platform gateway is configured by the host, never discovered.
         // Without this a catalog entry plus a matching environment variable would be enough to

@@ -70,7 +70,13 @@ const layer = Layer.effect(
       let needsAsk = false
 
       for (const pattern of request.patterns) {
-        const rule = evaluate(request.permission, pattern, ruleset, approved)
+        // PERM-04: a deny in the agent's own ruleset is final. The answers already given in this
+        // session are consulted after it but can only turn an `ask` into an `allow`, never lift a
+        // deny — the read and edit tools ask with `always: ["*"]`, so a single "always" on any
+        // file would otherwise re-open every credential file the ruleset refuses.
+        const configured = evaluate(request.permission, pattern, ruleset)
+        const rule =
+          configured.action === "deny" ? configured : evaluate(request.permission, pattern, ruleset, approved)
         yield* Effect.logInfo("evaluated", { permission: request.permission, pattern, action: rule })
         if (rule.action === "deny") {
           return yield* new PermissionV1.DeniedError({
@@ -201,14 +207,22 @@ export function merge(...rulesets: PermissionV1.Ruleset[]): PermissionV1.Rule[] 
   return rulesets.flat()
 }
 
+// A tool is hidden from the model when the last blanket rule for it is a deny and nothing after
+// that rule lets any pattern through. Looking only at the very last matching rule would make a
+// hidden tool reappear as soon as a later ruleset adds a narrow rule for the same permission —
+// which is what the credential-file rules do (PERM-04): they are appended after every agent's own
+// rules, and they must not turn a whitelist's blanket deny back into a visible tool.
 export function disabled(tools: string[], ruleset: PermissionV1.Ruleset): Set<string> {
   const edits = ["edit", "write", "apply_patch"]
   const reads = ["list_mcp_resources", "list_mcp_resource_templates", "read_mcp_resource"]
   return new Set(
     tools.filter((tool) => {
       const permission = edits.includes(tool) ? "edit" : reads.includes(tool) ? "read" : tool
-      const rule = ruleset.findLast((rule) => Wildcard.match(permission, rule.permission))
-      return rule?.pattern === "*" && rule.action === "deny"
+      const matching = ruleset.filter((rule) => Wildcard.match(permission, rule.permission))
+      const blanket = matching.findLastIndex((rule) => rule.pattern === "*")
+      if (blanket === -1) return false
+      if (matching[blanket]!.action !== "deny") return false
+      return matching.slice(blanket + 1).every((rule) => rule.action !== "allow")
     }),
   )
 }

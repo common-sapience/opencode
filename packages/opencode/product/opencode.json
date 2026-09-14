@@ -1,6 +1,26 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "default",
+  "provider": {
+    "platform": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Model Gateway",
+      "options": {
+        "baseURL": "{env:MODEL_API_BASE_URL}",
+        "apiKey": "{env:MODEL_API_KEY}"
+      },
+      "models": {
+        "{env:MODEL_ID}": {
+          "name": "{env:MODEL_ID}",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": { "context": 1048576, "output": 32000 }
+        }
+      }
+    }
+  },
+  "model": "platform/{env:MODEL_ID}",
+  "enabled_providers": ["platform"],
   "instructions": ["{env:HARNESS_MEMORY_DIR}/MEMORY.md"],
   "skills": {
     "paths": ["{env:HARNESS_PRODUCT_DIR}/skills"]

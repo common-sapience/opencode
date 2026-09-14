@@ -5,7 +5,7 @@ product agent profiles that ship with the desktop package. It is data, not code 
 imported, it is discovered by the engine's normal configuration mechanisms.
 
 ```
-opencode.json        managed config: instructions, skills, the browser MCP server, permission baseline
+opencode.json        managed config: the model gateway, instructions, skills, the browser MCP server, permission baseline
 agent/dream.md       the memory consolidation profile and its allowlist
 skills/memory/       how an agent saves a memory (ENG-19, RULE-11)
 skills/dream/        the four-phase consolidation pass the dream profile runs
@@ -20,6 +20,13 @@ directories, and writes every variable the file below substitutes into the envir
 configuration is read. An unset variable substitutes to an empty string, which would turn
 `{env:DIR}/*` into `/*` and `node {env:ENTRY}` into `node ""`, so none of them is ever left empty.
 
+This file is the **base** every other configuration layers onto, not the last word: it is merged
+before the user's global file and before any other configuration directory, so a host that names its
+own gateway, permission rules or MCP servers overrides what is here. Two definitions of the same
+provider merge rather than collide. The provider lock that RULE-02 needs does not depend on this
+ordering: it is in source — `@ai-sdk/openai-compatible` is the only adapter that exists, and a
+provider is only reachable when a configuration defines it explicitly (`src/provider/provider.ts`).
+
 | Variable                       | Unset                                                                                                        | Set by                                                              |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
 | `OPENCODE_CONFIG_DIR`          | this directory is added to the configuration directories, next to the XDG one                                | the host, only to use its own copy of this directory instead        |
@@ -30,9 +37,43 @@ configuration is read. An unset variable substitutes to an empty string, which w
 | `HARNESS_BROWSER_AUTO_CONNECT` | `false`: the server launches Chrome on its own persistent profile                                            | the host, `true` to attach to a Chrome the user already has running |
 
 So the daemon starts the engine as `opencode acp` and sets none of these. What it still owns is
-everything outside this directory: the platform API key (HOST-09), the session's profile and the
-permission switch (HOST-12), connector MCP configuration (HOST-11), and triggering the consolidation
-pass below (T-15).
+everything outside this directory: the session's profile and the permission switch (HOST-12),
+connector MCP configuration (HOST-11), triggering the consolidation pass below (T-15) — and the
+three variables that have no default, below.
+
+## The model gateway
+
+The platform gateway is the only provider the product has (ENG-12, RULE-02), and it is defined here
+so that a packaged install has a model without anything being written into a user's config file. Its
+three variables are the one part of this directory that `bootstrap` does **not** fill in: they
+identify a user's account on the platform, so there is no value to default to and the host injects
+them when it starts the engine (HOST-09).
+
+| Variable             | Substituted into                                   | Unset                                      |
+| -------------------- | -------------------------------------------------- | ------------------------------------------ |
+| `MODEL_API_BASE_URL` | `provider.platform.options.baseURL`                | the gateway is refused, the variable named |
+| `MODEL_API_KEY`      | `provider.platform.options.apiKey`                 | the gateway is refused, the variable named |
+| `MODEL_ID`           | the key in `provider.platform.models`, and `model` | the gateway is refused, the variable named |
+
+The model id is a key, not a value. `{env:...}` is substituted in the configuration text before it is
+parsed, so a key carries a variable the same way a value does — which is the only way to write this
+file, because the openai-compatible adapter has no catalog to look an unknown model id up in: a model
+that is not in `models` is not selectable. There is therefore no generic entry here; the map has
+exactly the one model the host names.
+
+Fail closed, not fail quiet. An unset variable substitutes to an empty string, and an empty `baseURL`
+or `apiKey` would reach the wire and come back as a bare 401, while an empty model id would leave a
+provider with no models and the engine reporting that none is available. So the empty model id is
+dropped at config load, and `Provider` refuses the gateway with every missing variable named in one
+sentence:
+
+```
+The model gateway is not configured: MODEL_API_BASE_URL, MODEL_API_KEY, MODEL_ID are not set in the engine's environment.
+```
+
+It is raised when a model is first resolved, not at startup, so commands that need no model still
+run. `limit` is the one value here that is a guess rather than a fact — the adapter has no catalog to
+read a context window from — and a host that knows better overrides it in its own configuration.
 
 A built bundle is the one case that needs care: the engine locates both this directory and the
 browser package relative to the executable, so `product/` and `node_modules/chrome-devtools-mcp` have
@@ -47,6 +88,7 @@ missing. It never leaves the machine.
 
 ## Keys used, and what each one buys
 
+- `provider.platform`, `model`, `enabled_providers` — the model gateway, above.
 - `instructions: ["{env:HARNESS_MEMORY_DIR}/MEMORY.md"]` — the index is injected into every agent's
   system prompt. Instructions are resolved per session, not per profile, which is what makes one
   memory shared by every profile (RULE-11).
