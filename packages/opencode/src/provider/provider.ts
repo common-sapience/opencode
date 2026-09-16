@@ -357,7 +357,7 @@ export class GatewayNotConfiguredError extends Schema.TaggedErrorClass<GatewayNo
   override get message() {
     const names = this.missing.join(", ")
     const verb = this.missing.length === 1 ? "is" : "are"
-    return `The model gateway is not configured: ${names} ${verb} not set in the engine's environment.`
+    return `The model gateway is not configured: ${names} ${verb} missing from the product configuration.`
   }
 
   static isInstance(input: unknown): input is GatewayNotConfiguredError {
@@ -623,24 +623,16 @@ const layer = Layer.effect(
 
         const configured = new Set(configProviders.map(([id]) => id))
 
-        // ENG-12 / HOST-09: the address, key and model id of the platform gateway are the one part
-        // of the managed configuration with no default, because they identify a user's account; the
-        // host injects them when it starts the engine. A variable that resolved to nothing would
-        // otherwise reach the wire as an empty baseURL or an empty key and come back as a bare 401,
-        // or leave the provider with no model and the engine reporting that none is available. The
-        // gateway is refused here instead, with the variables that are missing named.
+        // ENG-12: the platform gateway's address is fixed in the managed configuration. It is the
+        // one thing the shipped file has to carry, so a product whose configuration lost it is
+        // refused by name rather than sending requests to an empty baseURL.
         const gateway = ProviderV2.ID.make(Product.GATEWAY_PROVIDER)
         const gatewayConfig = cfg.provider?.[gateway]
         if (gatewayConfig && !disabled.has(gateway) && (!enabled || enabled.has(gateway))) {
-          const set = (key: string) => {
-            const value = gatewayConfig.options?.[key]
-            return typeof value === "string" && value.trim() !== ""
+          const baseURL = gatewayConfig.options?.["baseURL"]
+          if (typeof baseURL !== "string" || baseURL.trim() === "") {
+            throw new GatewayNotConfiguredError({ missing: ["baseURL"] })
           }
-          const missing: string[] = []
-          if (!set("baseURL")) missing.push(Product.GATEWAY_BASE_URL)
-          if (!set("apiKey")) missing.push(Product.GATEWAY_API_KEY)
-          if (!Object.keys(gatewayConfig.models ?? {}).length) missing.push(Product.GATEWAY_MODEL_ID)
-          if (missing.length) throw new GatewayNotConfiguredError({ missing })
         }
 
         // ENG-12 / RULE-02: the platform gateway is configured by the host, never discovered.
@@ -870,6 +862,13 @@ const layer = Layer.effect(
               }
             } catch (e) {}
           })
+        }
+
+        // The gateway's key is the user's, stored by the client through the auth store. Without one
+        // the provider is not offered at all: it would only answer 401, and its absence from the list
+        // is what tells the client to ask for the key.
+        if (providers[gateway] && !providers[gateway].key && providers[gateway].options["apiKey"] === undefined) {
+          delete providers[gateway]
         }
 
         for (const [id, provider] of Object.entries(providers)) {

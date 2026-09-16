@@ -6,7 +6,7 @@ import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
 import { useMutation } from "@tanstack/solid-query"
 import { TextField } from "@opencode-ai/ui/text-field"
 import { showToast } from "@/utils/toast"
-import { batch, For } from "solid-js"
+import { batch, For, Show } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { ExternalLink } from "@/components/external-link"
 import { useServerSDK } from "@/context/server-sdk"
@@ -16,6 +16,8 @@ import { type FormState, headerRow, modelRow, validateCustomProvider } from "./d
 
 type Props = {
   onBack: () => void
+  // The id of a provider to edit rather than create; the product's gateway is opened this way.
+  provider?: string
 }
 
 export function DialogCustomProvider(props: Props) {
@@ -35,24 +37,35 @@ export function DialogCustomProvider(props: Props) {
       }
       transition
     >
-      <CustomProviderForm />
+      <CustomProviderForm provider={props.provider} />
     </Dialog>
   )
 }
 
-export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
+export function CustomProviderForm(props: { autofocus?: boolean; provider?: string } = {}) {
   const dialog = useDialog()
   const serverSync = useServerSync()
   const serverSDK = useServerSDK()
   const language = useLanguage()
 
+  const existing = props.provider ? serverSync().data.provider.all.get(props.provider) : undefined
+  const existingConfig = props.provider ? serverSync().data.config.provider?.[props.provider] : undefined
+  const existingModels = Object.entries(existingConfig?.models ?? {})
+    .filter(([id]) => !existingConfig?.whitelist || existingConfig.whitelist.includes(id))
+    .map(([id, model]) => ({ ...modelRow(), id, name: model.name ?? id }))
+  const existingHeaders = Object.entries(existingConfig?.options?.["headers"] ?? {}).map(([key, value]) => ({
+    ...headerRow(),
+    key,
+    value: String(value),
+  }))
+
   const [form, setForm] = createStore<FormState>({
-    providerID: "",
-    name: "",
-    baseURL: "",
+    providerID: props.provider ?? "",
+    name: existing?.name ?? existingConfig?.name ?? "",
+    baseURL: typeof existing?.options?.["baseURL"] === "string" ? existing.options["baseURL"] : "",
     apiKey: "",
-    models: [modelRow()],
-    headers: [headerRow()],
+    models: existingModels.length ? existingModels : [modelRow()],
+    headers: existingHeaders.length ? existingHeaders : [headerRow()],
     err: {},
   })
 
@@ -120,6 +133,7 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
       t: language.t,
       disabledProviders: serverSync().data.config.disabled_providers ?? [],
       existingProviderIDs: new Set(serverSync().data.provider.all.keys()),
+      existing: !!props.provider,
     })
     batch(() => {
       setForm("err", output.err)
@@ -178,22 +192,27 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
   return (
     <div class="flex flex-col gap-6 px-2.5 pb-3 overflow-y-auto max-h-[60vh]">
       <div class="px-2.5 flex gap-4 items-center">
-        <ProviderIcon id="synthetic" class="size-5 shrink-0 icon-strong-base" />
-        <div class="text-16-medium text-text-strong">{language.t("provider.custom.title")}</div>
+        <ProviderIcon id={props.provider ?? "synthetic"} class="size-5 shrink-0 icon-strong-base" />
+        <div class="text-16-medium text-text-strong">
+          {props.provider ? form.name || props.provider : language.t("provider.custom.title")}
+        </div>
       </div>
 
       <form onSubmit={save} class="px-2.5 pb-6 flex flex-col gap-6">
-        <p class="text-14-regular text-text-base">
-          {language.t("provider.custom.description.prefix")}
-          <ExternalLink href="https://opencode.ai/docs/providers/#custom-provider" tabIndex={-1}>
-            {language.t("provider.custom.description.link")}
-          </ExternalLink>
-          {language.t("provider.custom.description.suffix")}
-        </p>
+        <Show when={!props.provider}>
+          <p class="text-14-regular text-text-base">
+            {language.t("provider.custom.description.prefix")}
+            <ExternalLink href="https://opencode.ai/docs/providers/#custom-provider" tabIndex={-1}>
+              {language.t("provider.custom.description.link")}
+            </ExternalLink>
+            {language.t("provider.custom.description.suffix")}
+          </p>
+        </Show>
 
         <div class="flex flex-col gap-4">
           <TextField
-            autofocus={props.autofocus ?? true}
+            autofocus={(props.autofocus ?? true) && !props.provider}
+            readOnly={!!props.provider}
             label={language.t("provider.custom.field.providerID.label")}
             placeholder={language.t("provider.custom.field.providerID.placeholder")}
             description={language.t("provider.custom.field.providerID.description")}
@@ -211,6 +230,7 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
             error={form.err.name}
           />
           <TextField
+            readOnly={!!props.provider}
             label={language.t("provider.custom.field.baseURL.label")}
             placeholder={language.t("provider.custom.field.baseURL.placeholder")}
             value={form.baseURL}
@@ -219,6 +239,7 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
             error={form.err.baseURL}
           />
           <TextField
+            autofocus={(props.autofocus ?? true) && !!props.provider}
             label={language.t("provider.custom.field.apiKey.label")}
             placeholder={language.t("provider.custom.field.apiKey.placeholder")}
             description={language.t("provider.custom.field.apiKey.description")}

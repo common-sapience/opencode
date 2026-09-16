@@ -38,42 +38,40 @@ provider is only reachable when a configuration defines it explicitly (`src/prov
 
 So the daemon starts the engine as `opencode acp` and sets none of these. What it still owns is
 everything outside this directory: the session's profile and the permission switch (HOST-12),
-connector MCP configuration (HOST-11), triggering the consolidation pass below (T-15) — and the
-three variables that have no default, below.
+connector MCP configuration (HOST-11), triggering the consolidation pass below (T-15).
 
 ## The model gateway
 
-The platform gateway is the only provider the product has (ENG-12, RULE-02), and it is defined here
-so that a packaged install has a model without anything being written into a user's config file. Its
-three variables are the one part of this directory that `bootstrap` does **not** fill in: they
-identify a user's account on the platform, so there is no value to default to and the host injects
-them when it starts the engine (HOST-09).
+The platform gateway is the only provider the product has (ENG-12, RULE-02), and its address is
+defined here so that a packaged install talks to the right place without anything being written into
+a user's config file. `baseURL` is the one fact this file fixes; `streaming: false` is how the engine
+is told the gateway answers only complete responses (one completion is requested and replayed as a
+stream). Nothing about the user is here.
 
-| Variable             | Substituted into                                   | Unset                                      |
-| -------------------- | -------------------------------------------------- | ------------------------------------------ |
-| `MODEL_API_BASE_URL` | `provider.platform.options.baseURL`                | the gateway is refused, the variable named |
-| `MODEL_API_KEY`      | `provider.platform.options.apiKey`                 | the gateway is refused, the variable named |
-| `MODEL_ID`           | the key in `provider.platform.models`, and `model` | the gateway is refused, the variable named |
+The key and the models are the user's, entered once in the client's provider settings:
 
-The model id is a key, not a value. `{env:...}` is substituted in the configuration text before it is
-parsed, so a key carries a variable the same way a value does — which is the only way to write this
-file, because the openai-compatible adapter has no catalog to look an unknown model id up in: a model
-that is not in `models` is not selectable. There is therefore no generic entry here; the map has
-exactly the one model the host names.
+| What    | Where the client writes it                               | Read by                                          |
+| ------- | -------------------------------------------------------- | ------------------------------------------------ |
+| API key | the engine's auth store (`auth.json`, `type: "api"`)     | `Provider` fills `options.apiKey` from it        |
+| models  | `provider.platform.models` in the user's own config file | merged onto this file's definition of `platform` |
 
-Fail closed, not fail quiet. An unset variable substitutes to an empty string, and an empty `baseURL`
-or `apiKey` would reach the wire and come back as a bare 401, while an empty model id would leave a
-provider with no models and the engine reporting that none is available. So the empty model id is
-dropped at config load, and `Provider` refuses the gateway with every missing variable named in one
-sentence:
+Two definitions of the same provider merge, so the user's models land on the shipped address. The
+openai-compatible adapter has no catalog to look an unknown model id up in, so a model that is not in
+`models` is not selectable; the client's form is where the list is kept. The client also writes
+`whitelist` with the same ids, because configuration merges add and never remove: the whitelist is
+what makes a model the user deleted disappear.
+
+Fail closed, not fail quiet. Until both the key and at least one model are there the gateway is not
+offered at all rather than sent to the wire to come back as a 401: `Provider` drops it from the list,
+and the provider HTTP handler shows it to the client from this file (address and name, no models) so
+the client has an entry to configure. A shipped file that lost `baseURL` is refused by name:
 
 ```
-The model gateway is not configured: MODEL_API_BASE_URL, MODEL_API_KEY, MODEL_ID are not set in the engine's environment.
+The model gateway is not configured: baseURL is missing from the product configuration.
 ```
 
-It is raised when a model is first resolved, not at startup, so commands that need no model still
-run. `limit` is the one value here that is a guess rather than a fact — the adapter has no catalog to
-read a context window from — and a host that knows better overrides it in its own configuration.
+`limit` on a model is a guess rather than a fact when the user does not set one — the adapter has no
+catalog to read a context window from.
 
 A built bundle is the one case that needs care: the engine locates both this directory and the
 browser package relative to the executable, so `product/` and `node_modules/chrome-devtools-mcp` have

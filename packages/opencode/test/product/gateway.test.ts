@@ -1,8 +1,7 @@
-// ENG-12 / RULE-02 / HOST-09: the platform gateway is part of the shipped product configuration, so
-// a packaged install has a model gateway without anything being written into a user's config file.
-// Its address, key and model id are the one part of that configuration with no default: the host
-// injects them when it starts the engine, and a missing one is refused by name rather than sent to
-// the wire as an empty string.
+// ENG-12 / RULE-02: the platform gateway is part of the shipped product configuration, so a packaged
+// install has its address without anything being written into a user's config file. The key and the
+// models are the user's: the client stores the key in the engine's auth store and the models in the
+// user's own configuration, and until both are there the gateway is simply not offered.
 import { afterEach, expect } from "bun:test"
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { Cause, Effect, Exit, Layer } from "effect"
@@ -38,21 +37,14 @@ const it = testEffect(
   ),
 )
 
-const BASE_URL = "https://gateway.example/v1"
+const BASE_URL = "https://openrouter.ai/api/v1"
 const API_KEY = "product-test-key"
 const MODEL_ID = "platform-model-1"
 const GATEWAY = ProviderV2.ID.make(Product.GATEWAY_PROVIDER)
 
 // Everything that decides which product configuration is read and how the gateway resolves. A test
 // states all of it, so nothing leaks in from the suite's preload or from another test.
-const ENV = [
-  "OPENCODE_CONFIG_DIR",
-  "HARNESS_PRODUCT_DIR",
-  "OPENCODE_CONFIG_CONTENT",
-  Product.GATEWAY_BASE_URL,
-  Product.GATEWAY_API_KEY,
-  Product.GATEWAY_MODEL_ID,
-]
+const ENV = ["OPENCODE_CONFIG_DIR", "HARNESS_PRODUCT_DIR", "OPENCODE_CONFIG_CONTENT", "OPENCODE_AUTH_CONTENT"]
 
 const withEnv = <A, E, R>(vars: Record<string, string | undefined>, self: Effect.Effect<A, E, R>) =>
   Effect.acquireUseRelease(
@@ -75,11 +67,16 @@ const withEnv = <A, E, R>(vars: Record<string, string | undefined>, self: Effect
       }),
   )
 
-const configured = {
-  [Product.GATEWAY_BASE_URL]: BASE_URL,
-  [Product.GATEWAY_API_KEY]: API_KEY,
-  [Product.GATEWAY_MODEL_ID]: MODEL_ID,
-}
+// What the client writes when the user configures the gateway: the key into the auth store, the
+// models into the user's configuration. The address is never written; it stays in the shipped file.
+const storedKey = JSON.stringify({ [Product.GATEWAY_PROVIDER]: { type: "api", key: API_KEY } })
+const userModels = JSON.stringify({
+  provider: {
+    [Product.GATEWAY_PROVIDER]: {
+      models: { [MODEL_ID]: { name: MODEL_ID } },
+    },
+  },
+})
 
 const failure = <A, E, R>(self: Effect.Effect<A, E, R>) =>
   Effect.gen(function* () {
@@ -92,57 +89,80 @@ afterEach(async () => {
   await disposeAllInstances()
 })
 
-it.instance("the shipped configuration is the gateway: address, key and model come from the environment", () =>
+it.instance("the shipped configuration carries the gateway's address and nothing of the user's", () =>
   withEnv(
-    configured,
+    {},
     Effect.gen(function* () {
       const config = yield* Config.use.get()
       const provider = config.provider?.[Product.GATEWAY_PROVIDER]
       expect(provider?.npm).toBe("@ai-sdk/openai-compatible")
       expect(provider?.options?.["baseURL"]).toBe(BASE_URL)
-      expect(provider?.options?.["apiKey"]).toBe(API_KEY)
       // The platform gateway answers only complete responses (no stream), so the product declares it.
       expect(provider?.options?.["streaming"]).toBe(false)
-
-      // The model id is a key, and `{env:...}` is substituted in the configuration text before it is
-      // parsed, so a key carries a variable the same way a value does. That is what keeps the model
-      // out of the shipped file: there is no generic entry a model id could be matched against.
-      expect(Object.keys(provider?.models ?? {})).toEqual([MODEL_ID])
-      expect(config.model).toBe(`${Product.GATEWAY_PROVIDER}/${MODEL_ID}`)
+      expect(provider?.options?.["apiKey"]).toBeUndefined()
+      expect(provider?.models ?? {}).toEqual({})
+      expect(config.model).toBeUndefined()
       expect(config.enabled_providers).toEqual([Product.GATEWAY_PROVIDER])
 
+      // No key and no model: the gateway is not offered, and nothing fails.
+      const providers = yield* Provider.use.list()
+      expect(Object.keys(providers)).toEqual([])
+    }),
+  ),
+)
+
+it.instance("a stored key and a model in the user's configuration make the gateway available", () =>
+  withEnv(
+    { OPENCODE_AUTH_CONTENT: storedKey, OPENCODE_CONFIG_CONTENT: userModels },
+    Effect.gen(function* () {
       const providers = yield* Provider.use.list()
       expect(Object.keys(providers)).toEqual([Product.GATEWAY_PROVIDER])
-      expect(Object.keys(providers[GATEWAY].models)).toEqual([MODEL_ID])
+      const provider = providers[GATEWAY]
+      expect(provider.options["baseURL"]).toBe(BASE_URL)
+      expect(provider.options["streaming"]).toBe(false)
+      expect(provider.key).toBe(API_KEY)
+      expect(Object.keys(provider.models)).toEqual([MODEL_ID])
     }),
   ),
 )
 
-it.instance("nothing set: the gateway is refused, and the message names all three variables", () =>
+it.instance("a model without a key: the gateway is not offered", () =>
   withEnv(
-    {},
+    { OPENCODE_CONFIG_CONTENT: userModels },
     Effect.gen(function* () {
-      const config = yield* Config.use.get()
-      // A model whose id resolved to nothing is not a model, so it is dropped rather than offered.
-      expect(config.provider?.[Product.GATEWAY_PROVIDER]?.models).toEqual({})
-
-      const message = yield* failure(Provider.use.list())
-      // Not an empty model list and not a 401 from the gateway: the reason is the environment, and
-      // every variable that has to be set is named in one sentence.
-      expect(message).toContain(
-        "The model gateway is not configured: MODEL_API_BASE_URL, MODEL_API_KEY, MODEL_ID are not set in the engine's environment.",
-      )
+      const providers = yield* Provider.use.list()
+      expect(Object.keys(providers)).toEqual([])
     }),
   ),
 )
 
-it.instance("one variable missing: only that one is named", () =>
+it.instance("a key without a model: the gateway is not offered", () =>
   withEnv(
-    { ...configured, [Product.GATEWAY_API_KEY]: undefined },
+    { OPENCODE_AUTH_CONTENT: storedKey },
+    Effect.gen(function* () {
+      const providers = yield* Provider.use.list()
+      expect(Object.keys(providers)).toEqual([])
+    }),
+  ),
+)
+
+it.instance("a product configuration that lost the address is refused by name", () =>
+  withEnv(
+    {
+      OPENCODE_AUTH_CONTENT: storedKey,
+      OPENCODE_CONFIG_CONTENT: JSON.stringify({
+        provider: {
+          [Product.GATEWAY_PROVIDER]: {
+            options: { baseURL: "" },
+            models: { [MODEL_ID]: { name: MODEL_ID } },
+          },
+        },
+      }),
+    },
     Effect.gen(function* () {
       const message = yield* failure(Provider.use.list())
       expect(message).toContain(
-        "The model gateway is not configured: MODEL_API_KEY is not set in the engine's environment.",
+        "The model gateway is not configured: baseURL is missing from the product configuration.",
       )
     }),
   ),
@@ -164,8 +184,8 @@ it.instance("a second definition of the same provider merges onto the product's 
       }),
     },
     Effect.gen(function* () {
-      // The shipped configuration is the base, so a host that names its own gateway wins outright
-      // even with none of the variables set; this is the shape the harness end-to-end run layers on.
+      // The shipped configuration is the base, so a host that names its own gateway wins outright;
+      // this is the shape the harness end-to-end run layers on.
       const providers = yield* Provider.use.list()
       const provider = providers[GATEWAY]
       expect(provider?.options["baseURL"]).toBe("http://127.0.0.1:8797/v1")
