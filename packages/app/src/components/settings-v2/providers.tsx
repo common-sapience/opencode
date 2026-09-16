@@ -52,6 +52,28 @@ export const SettingsProvidersV2: Component<{
       .filter((p) => p.id !== "opencode" || Object.values(p.models).find((m) => m.cost?.input))
   })
 
+  // The product's gateway: the provider the shipped configuration defines. The client only sees
+  // the user's own configuration file, and the gateway's address is never written there (it stays
+  // in the shipped file), which is what tells it apart from a custom provider the user added. The
+  // user's key and models are entered through the custom provider form opened on it.
+  const gatewayID = createMemo(() => {
+    const config = serverSync().data.config
+    for (const [id, provider] of providers.all()) {
+      if (!("source" in provider) || provider.source !== "config") continue
+      if (config.provider?.[id]?.options?.["baseURL"]) continue
+      return id
+    }
+  })
+  const gateway = createMemo(() => {
+    const id = gatewayID()
+    if (!id) return
+    if (connected().some((p) => p.id === id)) return
+    return providers.all().get(id)
+  })
+  const configure = (provider: string) => {
+    dialog.show(() => <DialogCustomProvider provider={provider} onBack={dialog.close} />)
+  }
+
   const popular = createMemo(() => {
     const connectedIDs = new Set(connected().map((p) => p.id))
     const items = providers
@@ -181,9 +203,20 @@ export const SettingsProvidersV2: Component<{
                         </span>
                       }
                     >
-                      <ButtonV2 size="normal" variant="ghost-muted" onClick={() => void disconnect(item.id, item.name)}>
-                        {language.t("common.disconnect")}
-                      </ButtonV2>
+                      <div class="flex items-center gap-1">
+                        <Show when={item.id === gatewayID()}>
+                          <ButtonV2 size="normal" variant="ghost-muted" onClick={() => configure(item.id)}>
+                            {language.t("common.edit")}
+                          </ButtonV2>
+                        </Show>
+                        <ButtonV2
+                          size="normal"
+                          variant="ghost-muted"
+                          onClick={() => void disconnect(item.id, item.name)}
+                        >
+                          {language.t("common.disconnect")}
+                        </ButtonV2>
+                      </div>
                     </Show>
                   </div>
                 )}
@@ -195,6 +228,27 @@ export const SettingsProvidersV2: Component<{
         <div class="settings-v2-section">
           <h3 class="settings-v2-section-title">{language.t("settings.providers.section.popular")}</h3>
           <SettingsListV2>
+            <Show when={gateway()}>
+              {(item) => (
+                <div class="settings-v2-provider-row" data-component="gateway-provider-section">
+                  <div class="settings-v2-provider-lead">
+                    <ProviderIcon
+                      id={item().id}
+                      width={PROVIDER_ICON_SIZE}
+                      height={PROVIDER_ICON_SIZE}
+                      class="settings-v2-provider-icon shrink-0"
+                    />
+                    <div class="settings-v2-provider-main">
+                      <span class="settings-v2-provider-name">{item().name}</span>
+                      <Tag>{language.t("settings.providers.tag.config")}</Tag>
+                    </div>
+                  </div>
+                  <ButtonV2 size="normal" variant="neutral" icon="plus" onClick={() => configure(item().id)}>
+                    {language.t("common.connect")}
+                  </ButtonV2>
+                </div>
+              )}
+            </Show>
             <For each={popular()}>
               {(item) => (
                 <div class="settings-v2-provider-row">
