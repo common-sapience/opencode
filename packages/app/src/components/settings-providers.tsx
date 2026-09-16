@@ -55,12 +55,17 @@ const SettingsProvidersContent: Component<{ onBack?: () => void }> = (props) => 
       .filter((p) => p.id !== "opencode" || Object.values(p.models).find((m) => m.cost?.input))
   })
 
-  // The product's gateway: the one enabled provider the shipped configuration defines. Its address
-  // is fixed there; the user's key and models are entered through the custom provider form opened
-  // on it, so the client never carries the address itself.
+  // The product's gateway: the provider the shipped configuration defines. The client only sees
+  // the user's own configuration file, and the gateway's address is never written there (it stays
+  // in the shipped file), which is what tells it apart from a custom provider the user added. The
+  // user's key and models are entered through the custom provider form opened on it.
   const gatewayID = createMemo(() => {
     const config = serverSync().data.config
-    return config.enabled_providers?.find((id) => config.provider?.[id])
+    for (const [id, provider] of providers.all()) {
+      if (!("source" in provider) || provider.source !== "config") continue
+      if (config.provider?.[id]?.options?.["baseURL"]) continue
+      return id
+    }
   })
   const gateway = createMemo(() => {
     const id = gatewayID()
