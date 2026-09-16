@@ -179,18 +179,6 @@ const disableUnresolvedLocalMcp = Effect.fnUntraced(function* (info: Info) {
   }
 })
 
-// The same hole on the provider side: a model keyed by `{env:MODEL_ID}` becomes a model whose id is
-// the empty string when the variable is unset. It is not selectable and it is not a model, so it is
-// dropped rather than offered. What is left is either the model another configuration layer named or
-// nothing at all, and an empty gateway is refused by name in `Provider`.
-const dropUnresolvedModels = Effect.fnUntraced(function* (info: Info) {
-  for (const [providerID, provider] of Object.entries(info.provider ?? {})) {
-    if (!provider.models || !("" in provider.models)) continue
-    delete provider.models[""]
-    yield* Effect.logDebug("dropping a model whose id resolved to nothing", { provider: providerID })
-  }
-})
-
 function writable(info: Info) {
   const { plugin_origins: _plugin_origins, ...next } = info
   return next
@@ -572,7 +560,6 @@ const layer = Layer.effect(
         }
 
         yield* disableUnresolvedLocalMcp(result)
-        yield* dropUnresolvedModels(result)
 
         if (Flag.OPENCODE_DISABLE_AUTOCOMPACT) {
           result.compaction = { ...result.compaction, auto: false }

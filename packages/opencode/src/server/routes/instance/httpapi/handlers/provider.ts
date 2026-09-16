@@ -3,6 +3,7 @@ import { Config } from "@/config/config"
 import { ModelsDev } from "@opencode-ai/core/models-dev"
 import { Provider } from "@/provider/provider"
 import { Auth } from "@/auth"
+import { Product } from "@/config/product"
 
 import { mapValues } from "remeda"
 import { Effect, Schema } from "effect"
@@ -54,10 +55,30 @@ export const providerHandlers = HttpApiBuilder.group(InstanceHttpApi, "provider"
         mapValues(filtered, (item) => Provider.fromModelsDevProvider(item)),
         connected,
       )
+      // Defaults are taken before the gateway placeholder below: it has no model to default to.
+      const defaults = Provider.defaultModelIDs(providers)
+      // The platform gateway is not in the catalog and drops out of the connected set until the
+      // user has entered a key and named a model, so the client is shown it from the managed
+      // configuration: address, name, nothing else. This is the entry the client configures.
+      const gateway = ProviderV2.ID.make(Product.GATEWAY_PROVIDER)
+      const gatewayConfig = config.provider?.[gateway]
+      if (gatewayConfig && !providers[gateway]) {
+        providers[gateway] = {
+          id: gateway,
+          name: gatewayConfig.name ?? gateway,
+          source: "config",
+          env: [],
+          key: undefined,
+          options: { baseURL: gatewayConfig.options?.["baseURL"] },
+          models: {},
+        }
+      }
       return {
         all: Object.values(providers).map(Provider.toPublicInfo),
-        default: Provider.defaultModelIDs(providers),
-        connected: Object.keys(providers).filter((id) => id in connected || credentials[id]),
+        default: defaults,
+        connected: Object.keys(providers).filter(
+          (id) => id in connected || (credentials[id] && Object.keys(providers[id].models).length > 0),
+        ),
       }
     })
 
