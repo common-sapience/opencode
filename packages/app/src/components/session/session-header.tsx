@@ -234,6 +234,14 @@ export function SessionHeader() {
   const tint = createMemo(() =>
     messageAgentColor(params.id ? sync().data.message[params.id] : undefined, sync().data.agent),
   )
+  // The review button exists only while the session has recorded changes (UI-06).
+  const hasChanges = createMemo(() => {
+    const id = params.id
+    if (!id) return false
+    return (sync().data.message[id] ?? []).some(
+      (message) => message.role === "user" && (message.summary?.diffs?.length ?? 0) > 0,
+    )
+  })
   const v2ActionsState = createMemo<SessionHeaderV2ActionsState>(() => ({
     statusVisible: status(),
     statusLabel: language.t("status.popover.trigger"),
@@ -463,6 +471,24 @@ export function SessionHeader() {
                     </TooltipKeybind>
 
                     <div class="hidden md:flex items-center gap-1 shrink-0">
+                      <Show when={hasChanges()}>
+                        <TooltipKeybind
+                          title={language.t("command.review.toggle")}
+                          keybind={command.keybind("review.toggle")}
+                        >
+                          <Button
+                            variant="ghost"
+                            class="group/review-toggle titlebar-icon w-8 h-6 p-0 box-border"
+                            onClick={() => view().reviewPanel.toggle()}
+                            aria-label={language.t("command.review.toggle")}
+                            aria-expanded={view().reviewPanel.opened()}
+                            aria-controls="review-panel"
+                          >
+                            <Icon size="small" name={view().reviewPanel.opened() ? "review-active" : "review"} />
+                          </Button>
+                        </TooltipKeybind>
+                      </Show>
+
                       <TooltipKeybind
                         title={language.t("command.fileTree.toggle")}
                         keybind={command.keybind("fileTree.toggle")}
