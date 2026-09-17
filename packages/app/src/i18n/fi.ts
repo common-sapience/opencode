@@ -667,6 +667,7 @@ export const dict = {
   "session.new.git.none": "Ei Gitiä",
   "session.new.lastModified": "Viimeksi muokattu",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Hae projektista {{project}}",
   "session.header.searchFiles": "Etsi tiedostoja",

@@ -773,6 +773,7 @@ export const dict = {
   "session.new.git.none": "Git yo'q",
   "session.new.lastModified": "Oxirgi tahrirlangan",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Qidiruv {{project}}",
   "session.header.searchFiles": "Fayllarni qidirish",

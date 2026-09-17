@@ -680,6 +680,7 @@ export const dict = {
   "session.new.worktree.create": "Opprett nytt worktree",
   "session.new.lastModified": "Sist endret",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "Søk i {{project}}",

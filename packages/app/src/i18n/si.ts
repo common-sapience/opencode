@@ -766,6 +766,7 @@ export const dict: Record<string, string> = {
   "session.new.git.none": "Git නැත",
   "session.new.lastModified": "අවසන් වරට වෙනස් කරන ලදී",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}} සොයන්න",
   "session.header.searchFiles": "ගොනු සොයන්න",

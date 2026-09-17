@@ -752,6 +752,7 @@ export const dict = {
   "session.new.git.none": "Git なし",
   "session.new.lastModified": "最終更新",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}}を検索",
   "session.header.searchFiles": "ファイルを検索",

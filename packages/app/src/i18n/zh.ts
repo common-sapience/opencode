@@ -804,6 +804,7 @@ export const dict = {
   "session.new.git.none": "无 Git",
   "session.new.lastModified": "最后修改",
   "session.new.directory": "工作目录",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "选择目录",
   "session.header.search.placeholder": "搜索 {{project}}",
   "session.header.searchFiles": "搜索文件",

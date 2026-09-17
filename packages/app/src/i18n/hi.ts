@@ -778,6 +778,7 @@ export const dict = {
   "session.new.git.none": "कोई Git नहीं",
   "session.new.lastModified": "अंतिम बार संशोधित",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}} खोजें",
   "session.header.searchFiles": "फ़ाइलें खोजें",

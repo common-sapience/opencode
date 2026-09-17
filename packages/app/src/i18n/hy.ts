@@ -773,6 +773,7 @@ export const dict = {
   "session.new.git.none": "Առանց Git-ի",
   "session.new.lastModified": "Վերջին փոփոխությունը",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Որոնում {{project}}",
   "session.header.searchFiles": "Որոնել ֆայլեր",

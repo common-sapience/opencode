@@ -767,6 +767,7 @@ export const dict = {
   "session.new.git.none": "Git وجود ندارد",
   "session.new.lastModified": "آخرین تغییر",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "جستجوی {{project}}",
   "session.header.searchFiles": "جستجو در فایل ها",

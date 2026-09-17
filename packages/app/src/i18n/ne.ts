@@ -770,6 +770,7 @@ export const dict: Record<string, string> = {
   "session.new.git.none": "छैन Git",
   "session.new.lastModified": "पछिल्लो पटक परिमार्जन गरिएको",
   "session.new.directory": "Working directory",
+  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}} खोज्नुहोस्",
   "session.header.searchFiles": "फाइलहरू खोज्नुहोस्",
