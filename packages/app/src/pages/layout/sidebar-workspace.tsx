@@ -548,9 +548,10 @@ const AgentSessionList = (props: {
                   onClick={() => toggle(agent.name)}
                 >
                   <IconV2
-                    name={open() ? "chevron-down" : "chevron-right"}
+                    name="chevron-down"
                     size="small"
-                    class="text-icon-weak shrink-0"
+                    class="text-icon-weak shrink-0 transition-transform duration-150"
+                    classList={{ "rotate-180": open() }}
                   />
                   <Tooltip value={agent.description ?? label(agent)} placement="right" class="min-w-0 flex-1">
                     <span class="block text-12-medium text-text-weak uppercase tracking-wide truncate">
