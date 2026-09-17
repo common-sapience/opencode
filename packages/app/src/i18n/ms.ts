@@ -767,7 +767,6 @@ export const dict = {
   "session.new.lastModified": "Terakhir diubah suai",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
-  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Cari {{project}}",
   "session.header.searchFiles": "Cari fail",

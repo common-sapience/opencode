@@ -773,7 +773,6 @@ export const dict = {
   "session.new.lastModified": "Последња измена",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
-  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Претрага {{project}}",
   "session.header.searchFiles": "Претрага датотека",

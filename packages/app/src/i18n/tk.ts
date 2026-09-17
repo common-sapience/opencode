@@ -771,7 +771,6 @@ export const dict = {
   "session.new.lastModified": "Soňky gezek üýtgedildi",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
-  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}} gözläň",
   "session.header.searchFiles": "Faýllary gözläň",

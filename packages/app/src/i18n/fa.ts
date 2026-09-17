@@ -768,7 +768,6 @@ export const dict = {
   "session.new.lastModified": "آخرین تغییر",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
-  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "جستجوی {{project}}",
   "session.header.searchFiles": "جستجو در فایل ها",

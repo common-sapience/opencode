@@ -775,7 +775,6 @@ export const dict = {
   "session.new.lastModified": "Ultima modificare",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
-  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Caută în {{project}}",
   "session.header.searchFiles": "Caută fișiere",

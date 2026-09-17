@@ -774,7 +774,6 @@ export const dict = {
   "session.new.lastModified": "Oxirgi tahrirlangan",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
-  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Qidiruv {{project}}",
   "session.header.searchFiles": "Fayllarni qidirish",
