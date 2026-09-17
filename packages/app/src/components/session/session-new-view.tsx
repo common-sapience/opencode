@@ -80,7 +80,6 @@ export function NewSessionView(_props: NewSessionViewProps) {
                 data-action="session-agent"
               >
                 <span class="truncate">{agentLabel(currentAgent())}</span>
-                <Icon name="chevron-down" size="small" class="text-icon-weak shrink-0" />
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
                 <DropdownMenu.Content class="mt-1 min-w-[180px]">
