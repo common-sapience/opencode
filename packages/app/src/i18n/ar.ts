@@ -818,6 +818,8 @@ export const dict = {
   "sidebar.menu.toggle": "تبديل القائمة",
   "sidebar.nav.projectsAndSessions": "المشاريع والجلسات",
   "sidebar.settings": "الإعدادات",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

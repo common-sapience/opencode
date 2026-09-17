@@ -807,6 +807,8 @@ export const dict = {
   "sidebar.menu.toggle": "メニューを切り替え",
   "sidebar.nav.projectsAndSessions": "プロジェクトとセッション",
   "sidebar.settings": "設定",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

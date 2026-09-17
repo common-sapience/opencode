@@ -876,6 +876,8 @@ export const dict = {
   "sidebar.menu.toggle": "မီနူးကို ပြောင်းရန်",
   "sidebar.nav.projectsAndSessions": "ပရောဂျက်များနှင့် ဆက်ရှင်များ",
   "sidebar.settings": "ဆက်တင်များ",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

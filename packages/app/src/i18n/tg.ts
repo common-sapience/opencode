@@ -870,6 +870,8 @@ export const dict = {
   "sidebar.menu.toggle": "Менюи гузариш",
   "sidebar.nav.projectsAndSessions": "Лоиҳаҳо ва ҷаласаҳо",
   "sidebar.settings": "Танзимотҳо",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

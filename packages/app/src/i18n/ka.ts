@@ -866,6 +866,8 @@ export const dict = {
   "sidebar.menu.toggle": "გადართვა მენიუ",
   "sidebar.nav.projectsAndSessions": "პროექტები და სესიები",
   "sidebar.settings": "პარამეტრები",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

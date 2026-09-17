@@ -865,6 +865,8 @@ export const dict = {
   "sidebar.menu.toggle": "Lülitage menüü",
   "sidebar.nav.projectsAndSessions": "Projektid ja istungid",
   "sidebar.settings": "Seaded",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

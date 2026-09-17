@@ -866,6 +866,8 @@ export const dict = {
   "sidebar.menu.toggle": "تغییر منو",
   "sidebar.nav.projectsAndSessions": "پروژه ها و جلسات",
   "sidebar.settings": "تنظیمات",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

@@ -879,6 +879,8 @@ export const dict = {
   "sidebar.menu.toggle": "Bật/tắt menu",
   "sidebar.nav.projectsAndSessions": "Dự án và phiên",
   "sidebar.settings": "Cài đặt",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

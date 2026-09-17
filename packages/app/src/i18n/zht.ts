@@ -863,6 +863,8 @@ export const dict = {
   "sidebar.menu.toggle": "切換選單",
   "sidebar.nav.projectsAndSessions": "專案與工作階段",
   "sidebar.settings": "設定",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

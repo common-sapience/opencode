@@ -872,6 +872,8 @@ export const dict = {
   "sidebar.menu.toggle": "Pārslēgt izvēlni",
   "sidebar.nav.projectsAndSessions": "Projekti un sesijas",
   "sidebar.settings": "Iestatījumi",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

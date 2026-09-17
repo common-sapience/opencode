@@ -865,6 +865,8 @@ export const dict: Record<string, string> = {
   "sidebar.menu.toggle": "මෙනුව ටොගල් කරන්න",
   "sidebar.nav.projectsAndSessions": "ව්යාපෘති සහ සැසි",
   "sidebar.settings": "සැකසීම්",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

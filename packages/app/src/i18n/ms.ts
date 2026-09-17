@@ -866,6 +866,8 @@ export const dict = {
   "sidebar.menu.toggle": "Togol menu",
   "sidebar.nav.projectsAndSessions": "Projek dan sesi",
   "sidebar.settings": "Tetapan",
+  "sidebar.archived.title": "Archived",
+  "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",

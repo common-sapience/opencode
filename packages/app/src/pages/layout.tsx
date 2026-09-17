@@ -863,6 +863,17 @@ export default function LegacyLayout(props: ParentProps) {
     }
   }
 
+  async function unarchiveSession(session: Session) {
+    if ((await serverSDK().protocol) !== "v1") return
+    // The engine takes an explicit null to unarchive; the generated type only knows the timestamp.
+    const time = { archived: null } as unknown as { archived?: number }
+    await serverSDK().client.session.update({ sessionID: session.id, directory: session.directory, time })
+    const [, setStore] = serverSync().child(session.directory)
+    setStore("session", (items) =>
+      items.map((item) => (item.id === session.id ? { ...item, time: { ...item.time, archived: undefined } } : item)),
+    )
+  }
+
   async function archiveSession(session: Session) {
     if ((await serverSDK().protocol) !== "v1") return
     const [store, setStore] = serverSync().child(session.directory)
@@ -1842,6 +1853,7 @@ export default function LegacyLayout(props: ParentProps) {
     clearHoverProjectSoon,
     prefetchSession,
     archiveSession,
+    unarchiveSession,
     workspaceName,
     renameWorkspace,
     editorOpen,
