@@ -880,6 +880,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "Dự án và phiên",
   "sidebar.settings": "Cài đặt",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

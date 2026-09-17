@@ -869,6 +869,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "项目和会话",
   "sidebar.settings": "设置",
   "sidebar.archived.title": "已归档",
+  "sidebar.archived.empty": "没有已归档的会话",
   "common.unarchive": "取消归档",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agent",

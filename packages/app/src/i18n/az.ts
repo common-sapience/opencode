@@ -877,6 +877,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "Layihələr və sessiyalar",
   "sidebar.settings": "Tənzimləmələr",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

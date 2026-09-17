@@ -712,6 +712,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "Projekte und Sitzungen",
   "sidebar.settings": "Einstellungen",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

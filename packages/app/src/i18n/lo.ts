@@ -865,6 +865,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "ໂຄງການ ແລະກອງປະຊຸມ",
   "sidebar.settings": "ການຕັ້ງຄ່າ",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

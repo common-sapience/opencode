@@ -877,6 +877,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "ပရောဂျက်များနှင့် ဆက်ရှင်များ",
   "sidebar.settings": "ဆက်တင်များ",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

@@ -808,6 +808,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "プロジェクトとセッション",
   "sidebar.settings": "設定",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

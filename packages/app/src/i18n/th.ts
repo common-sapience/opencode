@@ -871,6 +871,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "โปรเจกต์และเซสชัน",
   "sidebar.settings": "การตั้งค่า",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

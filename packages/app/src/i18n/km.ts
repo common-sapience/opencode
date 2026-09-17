@@ -866,6 +866,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "គម្រោង និងសម័យ",
   "sidebar.settings": "ការកំណត់",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

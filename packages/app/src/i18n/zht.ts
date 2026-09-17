@@ -864,6 +864,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "專案與工作階段",
   "sidebar.settings": "設定",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

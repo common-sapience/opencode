@@ -888,6 +888,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "Projeler ve oturumlar",
   "sidebar.settings": "Ayarlar",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

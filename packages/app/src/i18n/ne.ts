@@ -869,6 +869,7 @@ export const dict: Record<string, string> = {
   "sidebar.nav.projectsAndSessions": "परियोजनाहरू र सत्रहरू",
   "sidebar.settings": "सेटिङहरू",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

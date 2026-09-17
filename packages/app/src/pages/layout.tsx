@@ -25,6 +25,7 @@ import { IconButton } from "@opencode-ai/ui/icon-button"
 import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
 import { Dialog } from "@opencode-ai/ui/dialog"
 import { DialogCreateAgent } from "@/components/dialog-create-agent"
+import { DialogArchivedSessions } from "@/components/dialog-archived-sessions"
 import { getFilename } from "@opencode-ai/core/util/path"
 import { Session } from "@opencode-ai/sdk/v2/client"
 import { usePlatform } from "@/context/platform"
@@ -2096,6 +2097,16 @@ export default function LegacyLayout(props: ParentProps) {
               aria-label={language.t("sidebar.settings")}
             />
           </TooltipKeybind>
+          <Tooltip placement="top" value={language.t("sidebar.archived.title")}>
+            <IconButton
+              icon="archive"
+              variant="ghost"
+              size="large"
+              data-action="sidebar-archived"
+              onClick={() => dialog.show(() => <DialogArchivedSessions unarchive={unarchiveSession} />)}
+              aria-label={language.t("sidebar.archived.title")}
+            />
+          </Tooltip>
           <Tooltip placement="top" value={language.t("sidebar.help")}>
             <IconButton
               icon="help"

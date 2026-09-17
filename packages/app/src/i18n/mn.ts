@@ -875,6 +875,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "Төсөл ба хуралдаанууд",
   "sidebar.settings": "Тохиргоо",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

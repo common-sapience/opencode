@@ -867,6 +867,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "Projek dan sesi",
   "sidebar.settings": "Tetapan",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

@@ -570,6 +570,7 @@ export const dict = {
   "sidebar.nav.projectsAndSessions": "프로젝트 및 세션",
   "sidebar.settings": "설정",
   "sidebar.archived.title": "Archived",
+  "sidebar.archived.empty": "No archived sessions",
   "common.unarchive": "Unarchive",
   "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",

@@ -1,5 +1,5 @@
 import { A, useNavigate, useParams } from "@solidjs/router"
-import { createEffect, createMemo, For, on, Show, type Accessor, type JSX } from "solid-js"
+import { createEffect, createMemo, For, Show, type Accessor, type JSX } from "solid-js"
 import { createStore } from "solid-js/store"
 import { createSortable } from "@thisbeyond/solid-dnd"
 import { createMediaQuery } from "@solid-primitives/media"
@@ -18,7 +18,7 @@ import { type Agent, type Session } from "@opencode-ai/sdk/v2/client"
 import { type LocalProject } from "@/context/layout"
 import { useServerSync, useQueryOptions } from "@/context/server-sync"
 import { useServerSDK } from "@/context/server-sdk"
-import { loadHomeSessionIndex, toLegacySummary, type HomeSessionEvents } from "@/context/global-sync/home-session-index"
+import { loadHomeSessionIndex, type HomeSessionEvents } from "@/context/global-sync/home-session-index"
 import { useLanguage } from "@/context/language"
 import { pathKey } from "@/utils/path-key"
 import { NewSessionItem, SessionItem, SessionSkeleton } from "./sidebar-items"
@@ -495,37 +495,10 @@ export const LocalWorkspace = (props: {
       .sort((a, b) => (b.time.updated ?? b.time.created) - (a.time.updated ?? a.time.created)),
   )
   const sessions = createMemo(() => roots().filter((session) => session.time.archived === undefined))
-  // The index drops archived sessions, so they are listed by their own query and refreshed whenever
-  // the active list changes, which is what archiving or unarchiving does.
-  const archivedLoad = useQuery(() => ({
-    queryKey: [...home().indexKey, "archived"],
-    queryFn: async ({ signal }) => {
-      // The server-wide list carries archived sessions too; the archived state is a field.
-      const response = await serverSDK().client.v2.session.list({ limit: 500, order: "desc" }, { signal })
-      return (response.data?.data ?? [])
-        .filter((item) => !item.parentID && typeof item.time.archived === "number")
-        .map(toLegacySummary)
-    },
-    retry: false,
-    staleTime: 30_000,
-  }))
-  createEffect(
-    on(
-      () => sessions().length,
-      () => void archivedLoad.refetch(),
-      { defer: true },
-    ),
-  )
-  const archived = createMemo(() => archivedLoad.data ?? [])
-  // Both lists are refetched after either action: the index only follows the events it is fed.
-  const refetch = () => Promise.all([indexLoad.refetch(), archivedLoad.refetch()])
+  // The index only follows the events it is fed, so it is refetched after archiving.
   const archive = async (session: Session) => {
     await props.ctx.archiveSession(session)
-    await refetch()
-  }
-  const unarchive = async (session: Session) => {
-    await props.ctx.unarchiveSession(session)
-    await refetch()
+    await indexLoad.refetch()
   }
   const loading = () => indexLoad.isLoading && sessions().length === 0
 
@@ -541,9 +514,7 @@ export const LocalWorkspace = (props: {
         agents={() => workspace().store.agent ?? []}
         loading={loading}
         sessions={sessions}
-        archived={archived}
         archive={archive}
-        unarchive={unarchive}
         hasMore={() => false}
         loadMore={async () => {}}
         language={language}
@@ -553,8 +524,6 @@ export const LocalWorkspace = (props: {
 }
 
 const COLLAPSED_KEY = "opencode.sidebar.agents.collapsed"
-// The archived group folds by default; it is stored under a key no agent can be named.
-const ARCHIVED_KEY = "/archived"
 
 // Which agent groups the user folded, per browser; a missing or unreadable store means all open.
 function readCollapsed(): Record<string, boolean> {
@@ -578,9 +547,7 @@ const AgentSessionList = (props: {
   agents: Accessor<Agent[]>
   loading: Accessor<boolean>
   sessions: Accessor<Session[]>
-  archived: Accessor<Session[]>
   archive: (session: Session) => Promise<void>
-  unarchive: (session: Session) => Promise<void>
   hasMore: Accessor<boolean>
   loadMore: () => Promise<void>
   language: ReturnType<typeof useLanguage>
@@ -588,7 +555,7 @@ const AgentSessionList = (props: {
   const agents = createMemo(() => userAgents(props.agents()))
   const grouped = createMemo(() => groupSessionsByAgent(agents(), props.sessions()))
   const label = (agent: Agent) => (agent.name === BLANK_AGENT ? props.language.t("sidebar.agents.blank") : agent.name)
-  const [collapsed, setCollapsed] = createStore<Record<string, boolean>>({ [ARCHIVED_KEY]: true, ...readCollapsed() })
+  const [collapsed, setCollapsed] = createStore<Record<string, boolean>>(readCollapsed())
   const toggle = (name: string) => {
     setCollapsed(name, (value) => !value)
     try {
@@ -678,53 +645,6 @@ const AgentSessionList = (props: {
           )
         }}
       </For>
-      <Show when={props.archived().length > 0}>
-        <div class="group/agent flex flex-col gap-1" data-component="sidebar-archived">
-          <button
-            type="button"
-            class="flex items-center gap-1 min-w-0 w-full pl-1 py-0.5 rounded-md text-left hover:bg-surface-base-hover focus:outline-none"
-            data-action="archived-toggle"
-            aria-expanded={!collapsed[ARCHIVED_KEY]}
-            onClick={() => toggle(ARCHIVED_KEY)}
-          >
-            <IconV2
-              name="chevron-down"
-              size="small"
-              class="text-icon-weak shrink-0 transition-transform duration-150"
-              classList={{ "rotate-180": !collapsed[ARCHIVED_KEY] }}
-            />
-            <span class="block text-12-medium text-text-weak uppercase tracking-wide truncate">
-              {props.language.t("sidebar.archived.title")} · {props.archived().length}
-            </span>
-          </button>
-          <Show when={!collapsed[ARCHIVED_KEY]}>
-            <For each={props.archived()}>
-              {(session) => (
-                <div class="group/archived flex items-center gap-1 min-w-0 pr-1">
-                  <A
-                    href={`/${base64Encode(session.directory)}/session/${session.id}`}
-                    class="flex items-center gap-2 min-w-0 flex-1 py-1 pl-2 text-14-regular text-text-weak truncate focus:outline-none"
-                    onClick={() => props.ctx.clearHoverProjectSoon()}
-                  >
-                    <span class="truncate">{session.title}</span>
-                  </A>
-                  <Tooltip value={props.language.t("common.unarchive")} placement="top">
-                    <IconButtonV2
-                      icon={<IconV2 name="archive" size="small" />}
-                      variant="ghost"
-                      size="small"
-                      class="size-6 rounded-md opacity-0 pointer-events-none group-hover/archived:opacity-100 group-hover/archived:pointer-events-auto group-focus-within/archived:opacity-100 group-focus-within/archived:pointer-events-auto"
-                      data-action="session-unarchive"
-                      aria-label={props.language.t("common.unarchive")}
-                      onClick={() => void props.unarchive(session)}
-                    />
-                  </Tooltip>
-                </div>
-              )}
-            </For>
-          </Show>
-        </div>
-      </Show>
       <Show when={props.hasMore()}>
         <div class="relative w-full py-1">
           <Button
