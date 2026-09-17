@@ -1,3 +1,4 @@
+import { AgentDefinition } from "@/agent/definition"
 import { ConfigV1 } from "@opencode-ai/core/v1/config/config"
 import { EventV2 } from "@opencode-ai/core/event"
 import { EventManifest } from "@/event-manifest"
@@ -71,6 +72,8 @@ export const GlobalPaths = {
   config: "/global/config",
   dispose: "/global/dispose",
   upgrade: "/global/upgrade",
+  agent: "/global/agent",
+  agentByName: "/global/agent/:name",
 } as const
 
 export const GlobalApi = HttpApi.make("global").add(
@@ -121,6 +124,29 @@ export const GlobalApi = HttpApi.make("global").add(
           identifier: "global.dispose",
           summary: "Dispose instance",
           description: "Clean up and dispose all OpenCode instances, releasing all resources.",
+        }),
+      ),
+      HttpApiEndpoint.post("agentCreate", GlobalPaths.agent, {
+        payload: AgentDefinition.CreateInput,
+        success: described(AgentDefinition.Created, "The created agent's name"),
+        error: [HttpApiError.BadRequest, AgentDefinition.InvalidError, AgentDefinition.ExistsError],
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.agent.create",
+          summary: "Create an agent",
+          description:
+            "Write a user agent definition from a name and a job description. The description is the agent's summary and its system prompt.",
+        }),
+      ),
+      HttpApiEndpoint.delete("agentDelete", GlobalPaths.agentByName, {
+        params: { name: Schema.String },
+        success: described(Schema.Boolean, "Agent deleted"),
+        error: [HttpApiError.BadRequest, AgentDefinition.InvalidError, AgentDefinition.NotFoundError],
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.agent.delete",
+          summary: "Delete an agent",
+          description: "Delete a user-created agent definition. Built-in and product agents cannot be deleted.",
         }),
       ),
       HttpApiEndpoint.post("upgrade", GlobalPaths.upgrade, {

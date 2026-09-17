@@ -194,13 +194,24 @@ it.instance("ENG-19: the product config registers the memory skill and the dream
   ),
 )
 
-it.instance("ENG-19: the dream profile is a primary agent ACP can select as a mode", () =>
+it.instance("ENG-22: the product config disables the upstream build and plan modes", () =>
+  withProduct(() =>
+    Effect.gen(function* () {
+      const names = (yield* Agent.Service.use((svc) => svc.list())).map((item) => item.name)
+      expect(names).toContain("default")
+      expect(names).not.toContain("build")
+      expect(names).not.toContain("plan")
+    }),
+  ),
+)
+
+it.instance("ENG-22: the dream profile is a primary agent the host selects, hidden from the user's list", () =>
   withProduct(() =>
     Effect.gen(function* () {
       const agent = yield* profile("dream")
       expect(agent).toBeDefined()
       expect(agent!.mode).toBe("primary")
-      expect(agent!.hidden).toBeUndefined()
+      expect(agent!.hidden).toBe(true)
       expect(agent!.prompt).toContain("dream")
       // The product default stays the default agent; dream is chosen per session.
       expect(yield* Agent.Service.use((svc) => svc.defaultAgent())).toBe("default")
@@ -256,8 +267,9 @@ it.instance(
           .filter((item) => item.mode !== "subagent" && item.hidden !== true)
           .map((item) => item.name)
         expect(primary).toContain("default")
-        expect(primary).toContain("dream")
         expect(primary).toContain("unrelated")
+        // The consolidation profile is the host's, hidden from the user's list (ENG-22).
+        expect(primary).not.toContain("dream")
       }),
     ),
   { config: { agent: { unrelated: { description: "A profile that knows nothing about memory" } } } },

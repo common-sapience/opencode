@@ -105,7 +105,14 @@ missing. It never leaves the machine.
 - `permission.bash` — refuses any shell command whose text names the memory directory. The shell is
   not the memory write path. The same rule is also merged after the host's permission baseline in
   `Agent`'s `sensitive` ruleset, so a blanket `{"*": "allow"}` cannot widen it (PERM-04).
-- `default_agent: "default"` — the product default profile (ENG-17).
+- `default_agent: "default"` — the product default profile (ENG-17), the blank agent every session
+  falls under when none is chosen.
+- `agent.build.disable`, `agent.plan.disable` — upstream's coding modes are switched off (ENG-22): a
+  session binds one agent for life, and the plan/build hand-off is a mode switch inside one session.
+  `dream` carries `hidden: true` for the same reason: it is the host's, not a choice the user makes.
+- User-created agents are not here: `POST /global/agent` writes them to the user's global
+  configuration directory (ENG-21), the same `agent/<name>.md` shape as `dream.md`, always
+  `mode: primary` and with no permission block, so they inherit the default profile's rules.
 - `agent/dream.md` frontmatter — the consolidation profile's allowlist: markdown reads and writes,
   `glob`, `list`, the `dream` skill, and nothing else. `external_directory: deny` is what confines
   it, because the host opens the pass with the memory directory as the working directory (below), so

@@ -1,6 +1,7 @@
 ---
 description: Memory consolidation pass. Reads and rewrites only the shared memory directory; no shell, no network, no subagents.
 mode: primary
+hidden: true
 permission:
   "*": deny
   skill:

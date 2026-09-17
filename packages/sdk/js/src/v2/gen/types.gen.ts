@@ -2032,6 +2032,15 @@ export type Config = {
   }
 }
 
+export type AgentDefinitionCreateInput = {
+  name: string
+  description: string
+}
+
+export type AgentDefinitionCreated = {
+  name: string
+}
+
 export type Model = {
   id: string
   providerID: string
@@ -3845,6 +3854,23 @@ export type ConfigV2ExperimentalPolicy = {
   action: "provider.use"
   effect: PolicyEffect
   resource: string
+}
+
+export type AgentDefinitionInvalidError = {
+  _tag: "AgentDefinition.InvalidError"
+  message: string
+}
+
+export type AgentDefinitionExistsError = {
+  _tag: "AgentDefinition.ExistsError"
+  message: string
+  name: string
+}
+
+export type AgentDefinitionNotFoundError = {
+  _tag: "AgentDefinition.NotFoundError"
+  message: string
+  name: string
 }
 
 export type ProjectDirectories = Array<{
@@ -7354,6 +7380,66 @@ export type GlobalDisposeResponses = {
 
 export type GlobalDisposeResponse = GlobalDisposeResponses[keyof GlobalDisposeResponses]
 
+export type GlobalAgentCreateData = {
+  body?: AgentDefinitionCreateInput
+  path?: never
+  query?: never
+  url: "/global/agent"
+}
+
+export type GlobalAgentCreateErrors = {
+  /**
+   * BadRequest | AgentDefinition.InvalidError | InvalidRequestError
+   */
+  400: EffectHttpApiErrorBadRequest | AgentDefinitionInvalidError | InvalidRequestError
+  /**
+   * AgentDefinition.ExistsError
+   */
+  409: AgentDefinitionExistsError
+}
+
+export type GlobalAgentCreateError = GlobalAgentCreateErrors[keyof GlobalAgentCreateErrors]
+
+export type GlobalAgentCreateResponses = {
+  /**
+   * The created agent's name
+   */
+  200: AgentDefinitionCreated
+}
+
+export type GlobalAgentCreateResponse = GlobalAgentCreateResponses[keyof GlobalAgentCreateResponses]
+
+export type GlobalAgentDeleteData = {
+  body?: never
+  path: {
+    name: string
+  }
+  query?: never
+  url: "/global/agent/{name}"
+}
+
+export type GlobalAgentDeleteErrors = {
+  /**
+   * BadRequest | AgentDefinition.InvalidError | InvalidRequestError
+   */
+  400: EffectHttpApiErrorBadRequest | AgentDefinitionInvalidError | InvalidRequestError
+  /**
+   * AgentDefinition.NotFoundError
+   */
+  404: AgentDefinitionNotFoundError
+}
+
+export type GlobalAgentDeleteError = GlobalAgentDeleteErrors[keyof GlobalAgentDeleteErrors]
+
+export type GlobalAgentDeleteResponses = {
+  /**
+   * Agent deleted
+   */
+  200: boolean
+}
+
+export type GlobalAgentDeleteResponse = GlobalAgentDeleteResponses[keyof GlobalAgentDeleteResponses]
+
 export type GlobalUpgradeData = {
   body?: {
     target: string
@@ -9451,6 +9537,7 @@ export type SessionListData = {
     start?: number
     search?: string
     limit?: number
+    archived?: boolean | "true" | "false"
   }
   url: "/session"
 }

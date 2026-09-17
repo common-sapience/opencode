@@ -632,9 +632,22 @@ const layer = Layer.effect(
       return yield* provider.defaultModel().pipe(Effect.orDie)
     })
 
-    const createUserMessage = Effect.fn("SessionPrompt.createUserMessage")(function* (input: PromptInput) {
+    // A session binds one agent for life (ENG-20): a prompt that names none runs under the agent
+    // the session recorded, and only then under the default. A recorded agent whose definition is
+    // gone falls through to the default too; an agent the request itself names must exist.
+    const resolveAgent = Effect.fn("SessionPrompt.resolveAgent")(function* (input: PromptInput) {
+      if (input.agent) return { name: input.agent, info: yield* agents.get(input.agent) }
+      const session = yield* sessions.get(input.sessionID).pipe(Effect.orDie)
+      const recorded = session.agent ? yield* agents.get(session.agent) : undefined
+      const info = recorded ?? (yield* agents.defaultInfo())
+      return { name: info.name, info }
+    })
+
+    const createUserMessage = Effect.fn("SessionPrompt.createUserMessage")(function* (raw: PromptInput) {
+      const resolved = yield* resolveAgent(raw)
+      const input: PromptInput = { ...raw, agent: resolved.name }
       const agentName = input.agent
-      const ag = agentName ? yield* agents.get(agentName) : yield* agents.defaultInfo()
+      const ag = resolved.info
       if (!ag) {
         const available = (yield* agents.list()).filter((a) => !a.hidden).map((a) => a.name)
         const hint = available.length ? ` Available agents: ${available.join(", ")}` : ""

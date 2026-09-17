@@ -3,6 +3,7 @@
 import { client } from "./client.gen.js"
 import { buildClientParams, type Client, type Options as Options2, type TDataShape } from "./client/index.js"
 import type {
+  AgentDefinitionCreateInput,
   AgentPartInput,
   AppAgentsErrors,
   AppAgentsResponses,
@@ -76,6 +77,10 @@ import type {
   FindTextResponses,
   FormatterStatusErrors,
   FormatterStatusResponses,
+  GlobalAgentCreateErrors,
+  GlobalAgentCreateResponses,
+  GlobalAgentDeleteErrors,
+  GlobalAgentDeleteResponses,
   GlobalConfigGetErrors,
   GlobalConfigGetResponses,
   GlobalConfigUpdateErrors,
@@ -1315,6 +1320,51 @@ export class Config extends HeyApiClient {
   }
 }
 
+export class Agent extends HeyApiClient {
+  /**
+   * Create an agent
+   *
+   * Write a user agent definition from a name and a job description. The description is the agent's summary and its system prompt.
+   */
+  public create<ThrowOnError extends boolean = false>(
+    parameters?: {
+      agentDefinitionCreateInput?: AgentDefinitionCreateInput
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ key: "agentDefinitionCreateInput", map: "body" }] }])
+    return (options?.client ?? this.client).post<GlobalAgentCreateResponses, GlobalAgentCreateErrors, ThrowOnError>({
+      url: "/global/agent",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Delete an agent
+   *
+   * Delete a user-created agent definition. Built-in and product agents cannot be deleted.
+   */
+  public delete<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "name" }] }])
+    return (options?.client ?? this.client).delete<GlobalAgentDeleteResponses, GlobalAgentDeleteErrors, ThrowOnError>({
+      url: "/global/agent/{name}",
+      ...options,
+      ...params,
+    })
+  }
+}
+
 export class Global extends HeyApiClient {
   /**
    * Get health
@@ -1379,6 +1429,11 @@ export class Global extends HeyApiClient {
   private _config?: Config
   get config(): Config {
     return (this._config ??= new Config({ client: this.client }))
+  }
+
+  private _agent?: Agent
+  get agent(): Agent {
+    return (this._agent ??= new Agent({ client: this.client }))
   }
 }
 
@@ -3375,6 +3430,7 @@ export class Session2 extends HeyApiClient {
       start?: number
       search?: string
       limit?: number
+      archived?: boolean | "true" | "false"
     },
     options?: Options<never, ThrowOnError>,
   ) {
@@ -3391,6 +3447,7 @@ export class Session2 extends HeyApiClient {
             { in: "query", key: "start" },
             { in: "query", key: "search" },
             { in: "query", key: "limit" },
+            { in: "query", key: "archived" },
           ],
         },
       ],
@@ -5059,7 +5116,7 @@ export class Location extends HeyApiClient {
   }
 }
 
-export class Agent extends HeyApiClient {
+export class Agent2 extends HeyApiClient {
   /**
    * List agents
    *
@@ -6998,9 +7055,9 @@ export class V2 extends HeyApiClient {
     return (this._location ??= new Location({ client: this.client }))
   }
 
-  private _agent?: Agent
-  get agent(): Agent {
-    return (this._agent ??= new Agent({ client: this.client }))
+  private _agent?: Agent2
+  get agent(): Agent2 {
+    return (this._agent ??= new Agent2({ client: this.client }))
   }
 
   private _session?: Session3

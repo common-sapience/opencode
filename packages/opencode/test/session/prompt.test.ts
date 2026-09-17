@@ -1019,30 +1019,30 @@ it.instance("subtask child inherits parent session external_directory allow", ()
 noLLMServer.instance(
   "prompt tools replace previous prompt tool rules",
   () =>
-  Effect.gen(function* () {
-    const prompt = yield* SessionPrompt.Service
-    const sessions = yield* Session.Service
-    const session = yield* sessions.create({ title: "Prompt tools" })
+    Effect.gen(function* () {
+      const prompt = yield* SessionPrompt.Service
+      const sessions = yield* Session.Service
+      const session = yield* sessions.create({ title: "Prompt tools" })
 
-    yield* prompt.prompt({
-      sessionID: session.id,
-      agent: "build",
-      noReply: true,
-      tools: { bash: false },
-      parts: [{ type: "text", text: "first" }],
-    })
-    yield* prompt.prompt({
-      sessionID: session.id,
-      agent: "build",
-      noReply: true,
-      tools: { read: true },
-      parts: [{ type: "text", text: "second" }],
-    })
+      yield* prompt.prompt({
+        sessionID: session.id,
+        agent: "build",
+        noReply: true,
+        tools: { bash: false },
+        parts: [{ type: "text", text: "first" }],
+      })
+      yield* prompt.prompt({
+        sessionID: session.id,
+        agent: "build",
+        noReply: true,
+        tools: { read: true },
+        parts: [{ type: "text", text: "second" }],
+      })
 
-    const reloaded = yield* sessions.get(session.id)
-    expect(reloaded.permission).toEqual([{ permission: "read", pattern: "*", action: "allow" }])
-    expect(Permission.evaluate("bash", "anything", reloaded.permission ?? []).action).toBe("ask")
-  }),
+      const reloaded = yield* sessions.get(session.id)
+      expect(reloaded.permission).toEqual([{ permission: "read", pattern: "*", action: "allow" }])
+      expect(Permission.evaluate("bash", "anything", reloaded.permission ?? []).action).toBe("ask")
+    }),
   // A provider only exists if configuration defines it (ENG-12), so the default model resolves
   // through the test provider rather than whatever the catalog happened to autoload.
   { config: cfg },
@@ -2472,4 +2472,63 @@ noLLMServer.instance(
       }
     }),
   30_000,
+)
+
+// ENG-20: a session binds one agent for life. A prompt that names none runs under the session's
+// recorded agent, a recorded agent whose definition is gone falls through to the default, and a
+// request that names an unknown agent is still refused.
+it.instance("ENG-20: a prompt that names no agent runs under the session's agent", () =>
+  Effect.gen(function* () {
+    yield* useServerConfig(providerCfg)
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const chat = yield* sessions.create({ title: "Bound", agent: "plan" })
+    const message = yield* prompt.prompt({
+      sessionID: chat.id,
+      noReply: true,
+      parts: [{ type: "text", text: "hello" }],
+    })
+    expect(message.info.role).toBe("user")
+    if (message.info.role === "user") expect(message.info.agent).toBe("plan")
+  }),
+)
+
+it.instance("ENG-20: a session whose agent definition is gone falls back to the default agent", () =>
+  Effect.gen(function* () {
+    yield* useServerConfig(providerCfg)
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const fallback = yield* AgentSvc.Service.use((svc) => svc.defaultAgent())
+    const chat = yield* sessions.create({ title: "Orphaned", agent: "ghost" })
+    const message = yield* prompt.prompt({
+      sessionID: chat.id,
+      noReply: true,
+      parts: [{ type: "text", text: "hello" }],
+    })
+    expect(message.info.role).toBe("user")
+    if (message.info.role === "user") expect(message.info.agent).toBe(fallback)
+  }),
+)
+
+it.instance("ENG-20: a prompt that names an unknown agent is refused", () =>
+  Effect.gen(function* () {
+    yield* useServerConfig(providerCfg)
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const chat = yield* sessions.create({ title: "Explicit", agent: "plan" })
+    const exit = yield* prompt
+      .prompt({
+        sessionID: chat.id,
+        agent: "ghost",
+        noReply: true,
+        parts: [{ type: "text", text: "hello" }],
+      })
+      .pipe(Effect.exit)
+    expect(Exit.isFailure(exit)).toBe(true)
+    if (Exit.isFailure(exit)) {
+      const err = Cause.squash(exit.cause)
+      expect(NamedError.Unknown.isInstance(err)).toBe(true)
+      if (NamedError.Unknown.isInstance(err)) expect(err.data.message).toContain('Agent not found: "ghost"')
+    }
+  }),
 )

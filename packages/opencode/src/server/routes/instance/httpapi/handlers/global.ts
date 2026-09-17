@@ -1,3 +1,4 @@
+import { AgentDefinition } from "@/agent/definition"
 import { Config } from "@/config/config"
 import { GlobalBus, type GlobalEvent as GlobalBusEvent } from "@/bus/global"
 import { EffectBridge } from "@/effect/bridge"
@@ -81,6 +82,27 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
       return result.info
     })
 
+    // A definition file changed on disk: drop the cached global config and every instance, the same
+    // reload the global config update triggers, so the agent list is rebuilt on the next request.
+    const reloadDefinitions = Effect.fn("GlobalHttpApi.reloadDefinitions")(function* () {
+      yield* config.invalidate()
+      bridge.fork(disposeAllInstancesAndEmitGlobalDisposed({ swallowErrors: true }))
+    })
+
+    const agentCreate = Effect.fn("GlobalHttpApi.agentCreate")(function* (ctx: {
+      payload: AgentDefinition.CreateInput
+    }) {
+      const created = yield* AgentDefinition.create(ctx.payload)
+      yield* reloadDefinitions()
+      return created
+    })
+
+    const agentDelete = Effect.fn("GlobalHttpApi.agentDelete")(function* (ctx: { params: { name: string } }) {
+      const removed = yield* AgentDefinition.remove(ctx.params.name)
+      yield* reloadDefinitions()
+      return removed
+    })
+
     const dispose = Effect.fn("GlobalHttpApi.dispose")(function* () {
       yield* disposeAllInstancesAndEmitGlobalDisposed()
       return true
@@ -122,5 +144,7 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
       .handle("configUpdate", configUpdate)
       .handle("dispose", dispose)
       .handle("upgrade", upgrade)
+      .handle("agentCreate", agentCreate)
+      .handle("agentDelete", agentDelete)
   }),
 )
