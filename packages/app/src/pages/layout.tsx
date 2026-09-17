@@ -22,7 +22,7 @@ import { ResizeHandle } from "@opencode-ai/ui/resize-handle"
 import { Button } from "@opencode-ai/ui/button"
 import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { IconButton } from "@opencode-ai/ui/icon-button"
-import { Tooltip } from "@opencode-ai/ui/tooltip"
+import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
 import { Dialog } from "@opencode-ai/ui/dialog"
 import { DialogCreateAgent } from "@/components/dialog-create-agent"
 import { getFilename } from "@opencode-ai/core/util/path"
@@ -1680,8 +1680,10 @@ export default function LegacyLayout(props: ParentProps) {
     )
   })
 
+  // The sidebar is one column (UI-02): agents on top, settings and help at the bottom, no project rail.
+  const RAIL_WIDTH = 0
   const side = createMemo(() => Math.max(layout.sidebar.width(), 244))
-  const panel = createMemo(() => Math.max(side() - 64, 0))
+  const panel = createMemo(() => Math.max(side() - RAIL_WIDTH, 0))
 
   const loadedSessionDirs = new Set<string>()
 
@@ -2081,6 +2083,36 @@ export default function LegacyLayout(props: ParentProps) {
             </div>
           </div>
         </div>
+
+        <div
+          class="shrink-0 flex items-center gap-1 px-1 py-2 border-t border-border-weaker-base"
+          data-component="sidebar-actions"
+        >
+          <TooltipKeybind
+            placement="top"
+            title={language.t("sidebar.settings")}
+            keybind={command.keybind("settings.open") ?? ""}
+          >
+            <IconButton
+              icon="settings-gear"
+              variant="ghost"
+              size="large"
+              data-action="sidebar-settings"
+              onClick={openSettings}
+              aria-label={language.t("sidebar.settings")}
+            />
+          </TooltipKeybind>
+          <Tooltip placement="top" value={language.t("sidebar.help")}>
+            <IconButton
+              icon="help"
+              variant="ghost"
+              size="large"
+              data-action="sidebar-help"
+              onClick={() => platform.openExternal("https://commonsapience.com")}
+              aria-label={language.t("sidebar.help")}
+            />
+          </Tooltip>
+        </div>
       </div>
     )
   }
@@ -2092,7 +2124,7 @@ export default function LegacyLayout(props: ParentProps) {
       mobile={mobile}
       opened={() => layout.sidebar.opened()}
       aimMove={aim.move}
-      // One fixed directory (D-04): the project rail has nothing to switch between, so it stays empty.
+      rail={false}
       projects={() => []}
       renderProject={(project) => (
         <SortableProject ctx={projectSidebarCtx} project={project} sortNow={sortNow} mobile={mobile} />
@@ -2168,7 +2200,7 @@ export default function LegacyLayout(props: ParentProps) {
                   direction="horizontal"
                   size={layout.sidebar.width()}
                   min={244}
-                  max={typeof window === "undefined" ? 1000 : window.innerWidth * 0.3 + 64}
+                  max={typeof window === "undefined" ? 1000 : window.innerWidth * 0.3 + RAIL_WIDTH}
                   onResize={(w) => {
                     setState("sizing", true)
                     if (sizet !== undefined) clearTimeout(sizet)
@@ -2218,7 +2250,7 @@ export default function LegacyLayout(props: ParentProps) {
                   !state.sizing,
               }}
               style={{
-                "--main-left": layout.sidebar.opened() ? `${side()}px` : "4rem",
+                "--main-left": layout.sidebar.opened() ? `${side()}px` : `${RAIL_WIDTH}px`,
               }}
             >
               <main
@@ -2266,7 +2298,7 @@ export default function LegacyLayout(props: ParentProps) {
                 "duration-180 ease-out": state.peeked && !layout.sidebar.opened(),
                 "duration-120 ease-in": !state.peeked || layout.sidebar.opened(),
               }}
-              style={{ "inset-inline-start": `calc(4rem + ${panel()}px)` }}
+              style={{ "inset-inline-start": `${RAIL_WIDTH + panel()}px` }}
             >
               <div class="h-full w-px" style={{ "box-shadow": "var(--shadow-sidebar-overlay)" }} />
             </div>
