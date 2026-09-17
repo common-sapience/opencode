@@ -78,7 +78,6 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
   const mac = createMemo(() => platform.platform === "desktop" && platform.os === "macos")
   const windows = createMemo(() => platform.platform === "desktop" && platform.os === "windows")
   const linux = createMemo(() => platform.platform === "desktop" && platform.os === "linux")
-  const web = createMemo(() => platform.platform === "web")
   const macTrafficLights = createMemo(() => mac() && !platform.windowFullscreen?.())
   const zoom = () => platform.webviewZoom?.() ?? 1
   const titlebarZoom = () => (windows() ? Math.max(zoom(), minTitlebarZoom) : zoom())
@@ -440,7 +439,7 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
               </Show>
               <div class="flex items-center gap-1 shrink-0">
                 <TooltipKeybind
-                  class={web() ? "hidden xl:flex shrink-0 ml-14" : "hidden xl:flex shrink-0 ml-2"}
+                  class="hidden xl:flex shrink-0 ml-2"
                   placement="bottom"
                   title={language.t("command.sidebar.toggle")}
                   keybind={command.keybind("sidebar.toggle")}

@@ -42,7 +42,11 @@ it.live("ENG-21: writes a primary definition whose description is both summary a
     expect(created).toEqual({ name: "researcher" })
 
     const parsed = matter(yield* Effect.promise(() => fs.readFile(AgentDefinition.file("researcher"), "utf8")))
-    expect(parsed.data).toEqual({ description: "Find sources for a claim.", mode: "primary" })
+    expect(parsed.data).toEqual({
+      description: "Find sources for a claim.",
+      mode: "primary",
+      inherit_base_prompt: true,
+    })
     expect(parsed.content.trim()).toBe(DESCRIPTION)
   }),
 )
@@ -56,6 +60,7 @@ it.instance("ENG-21: a created definition is loaded like any other agent", () =>
     expect(agent.native).toBe(false)
     expect(agent.description).toBe("Find sources for a claim.")
     expect(agent.prompt).toBe(DESCRIPTION)
+    expect(agent.inheritBasePrompt).toBe(true)
   }),
 )
 
