@@ -469,27 +469,25 @@ export function SessionHeader() {
                       >
                         <Button
                           variant="ghost"
-                          class="titlebar-icon w-8 h-6 p-0 box-border"
+                          class="group/panel-toggle titlebar-icon w-8 h-6 p-0 box-border"
                           onClick={() => {
-                            // One right panel (UI-06): closing the files closes the review with it. The
-                            // review opens on its own only when a file is opened or the agent changes one.
+                            // One right panel (UI-06): closing it closes the files, the review and the
+                            // terminal together. The review opens on its own only when a file is
+                            // opened or the agent changes one.
                             layout.fileTree.toggle()
-                            if (!layout.fileTree.opened()) view().reviewPanel.close()
+                            if (layout.fileTree.opened()) return
+                            view().reviewPanel.close()
+                            if (view().terminal.opened()) view().terminal.close()
                           }}
                           aria-label={language.t("command.fileTree.toggle")}
                           aria-expanded={layout.fileTree.opened()}
                           aria-controls="file-tree-panel"
                         >
-                          <div class="relative flex items-center justify-center size-4">
-                            <Icon
-                              size="small"
-                              name={layout.fileTree.opened() ? "file-tree-active" : "file-tree"}
-                              classList={{
-                                "text-icon-strong": layout.fileTree.opened(),
-                                "text-icon-weak": !layout.fileTree.opened(),
-                              }}
-                            />
-                          </div>
+                          <Icon
+                            size="small"
+                            class="-scale-x-100"
+                            name={layout.fileTree.opened() ? "sidebar-active" : "sidebar"}
+                          />
                         </Button>
                       </TooltipKeybind>
                     </div>
