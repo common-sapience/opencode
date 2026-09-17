@@ -125,10 +125,17 @@ const layer = Layer.effect(
         if (Permission.disabled(["skill"], agent.permission).has("skill")) return
 
         const list = yield* skill.available(agent)
+        const own =
+          agent.mode !== "subagent" && !agent.hidden
+            ? [
+                `Your own skills live in ${Skill.agentSkillsDir(agent.name)}: skills you write there are yours alone and are listed here from your next message on. Load the skill-author skill to write one.`,
+              ]
+            : []
 
         return [
           "Skills provide specialized instructions and workflows for specific tasks.",
           "Use the skill tool to load a skill when a task matches its description.",
+          ...own,
           // the agents seem to ingest the information about skills a bit better if we present a more verbose
           // version of them here and a less verbose version in tool description, rather than vice versa.
           Skill.fmt(list, { verbose: true }),

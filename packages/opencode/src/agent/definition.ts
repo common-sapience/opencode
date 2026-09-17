@@ -6,6 +6,7 @@ import path from "path"
 import matter from "gray-matter"
 import { Effect, Schema } from "effect"
 import { Global } from "@opencode-ai/core/global"
+import { agentSkillsDir } from "@/skill"
 
 // The engine's own definitions plus the product's consolidation profile. A user definition may not
 // take one of these names: it would replace or shadow the built-in silently.
@@ -114,6 +115,7 @@ export const remove = Effect.fn("AgentDefinition.remove")(function* (raw: string
         ? new NotFoundError({ message: `No user-created agent named "${name}".`, name })
         : new InvalidError({ message: `Could not delete the agent definition: ${String(error)}` }),
   })
+  yield* Effect.promise(() => fs.rm(agentSkillsDir(name), { recursive: true, force: true }))
   yield* Effect.logInfo("agent definition removed", { name, file: target })
   return true as const
 })

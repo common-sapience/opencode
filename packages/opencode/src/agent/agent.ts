@@ -146,6 +146,23 @@ const layer = Layer.effect(
           },
         })
 
+        // ENG-25: the file tools may write an agent's own skills directory and no other agent's;
+        // the shell may not name the tree at all. Merged after every other rule of a visible agent.
+        const ownSkills = (name: string, disabled: Set<string>) => {
+          const root = Skill.agentSkillsRoot()
+          const own = Skill.agentSkillsDir(name)
+          const tool = (id: string) =>
+            disabled.has(id)
+              ? { [`*${root}/*`]: "deny" as const }
+              : { [`*${root}/*`]: "deny" as const, [`*${own}/*`]: "allow" as const }
+          return Permission.fromConfig({
+            external_directory: { [path.join(root, "*")]: "deny", [path.join(own, "*")]: "allow" },
+            read: tool("read"),
+            edit: tool("edit"),
+            bash: { [`*${root}*`]: "deny" },
+          })
+        }
+
         // A blanket deny has to stay the last rule, so that nothing merged after it can let a
         // pattern back through.
         const denyAll = Permission.fromConfig({ "*": "deny" })
@@ -312,11 +329,16 @@ const layer = Layer.effect(
           item.options = mergeDeep(item.options, value.options ?? {})
           // The memory ruleset is appended again after the profile's own rules, so a profile
           // cannot widen the memory directory's write path (ENG-19).
-          item.permission = Permission.merge(
-            item.permission,
-            Permission.fromConfig(value.permission ?? {}),
-            memory,
-          )
+          item.permission = Permission.merge(item.permission, Permission.fromConfig(value.permission ?? {}), memory)
+        }
+
+        for (const name in agents) {
+          const agent = agents[name]
+          if (agent.hidden) continue
+          // A profile that allows no file tools keeps allowing none; only the shell and
+          // directory denials apply to it.
+          const disabled = Permission.disabled(["read", "edit"], agent.permission)
+          agent.permission = Permission.merge(agent.permission, ownSkills(name, disabled))
         }
 
         // Ensure Truncate.GLOB is allowed unless explicitly configured

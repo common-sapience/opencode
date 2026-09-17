@@ -182,6 +182,8 @@ it.instance("ENG-19: the product config registers the memory skill and the dream
       const names = skills.map((item) => item.name)
       expect(names).toContain("memory")
       expect(names).toContain("dream")
+      // ENG-25: how an agent writes a skill of its own ships with the product too.
+      expect(names).toContain("skill-author")
 
       const memory = skills.find((item) => item.name === "memory")!
       expect(memory.description).toBeDefined()

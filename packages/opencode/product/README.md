@@ -110,6 +110,9 @@ missing. It never leaves the machine.
 - `agent.build.disable`, `agent.plan.disable` — upstream's coding modes are switched off (ENG-22): a
   session binds one agent for life, and the plan/build hand-off is a mode switch inside one session.
   `dream` carries `hidden: true` for the same reason: it is the host's, not a choice the user makes.
+- `skills/skill-author/` — how an agent writes a skill of its own (ENG-25). Agent-owned skills live
+  outside this directory, under the user's `agent-skills/<agent>/`, and are listed for that agent
+  only; what ships here is shared by every agent.
 - User-created agents are not here: `POST /global/agent` writes them to the user's global
   configuration directory (ENG-21), the same `agent/<name>.md` shape as `dream.md`, always
   `mode: primary` and with no permission block, so they inherit the default profile's rules.

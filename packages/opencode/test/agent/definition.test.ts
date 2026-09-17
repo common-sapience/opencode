@@ -8,6 +8,8 @@ import fs from "fs/promises"
 import matter from "gray-matter"
 import { Agent } from "../../src/agent/agent"
 import { AgentDefinition } from "../../src/agent/definition"
+import { agentSkillsDir } from "../../src/skill"
+import path from "path"
 import { Auth } from "../../src/auth"
 import { Config } from "../../src/config/config"
 import { RuntimeFlags } from "../../src/effect/runtime-flags"
@@ -92,10 +94,21 @@ it.live("ENG-21: never overwrites an existing definition", () =>
   }),
 )
 
-it.live("ENG-21: removes only user-created definitions", () =>
+it.live("ENG-21: removes only user-created definitions, and the agent's own skills with it", () =>
   Effect.gen(function* () {
     yield* AgentDefinition.create({ name: "researcher", description: DESCRIPTION })
+    const skills = agentSkillsDir("researcher")
+    yield* Effect.promise(() => fs.mkdir(path.join(skills, "cite"), { recursive: true }))
+    yield* Effect.promise(() => fs.writeFile(path.join(skills, "cite", "SKILL.md"), "---\nname: cite\n---\n"))
     expect(yield* AgentDefinition.remove("researcher")).toBe(true)
+    expect(
+      yield* Effect.promise(() =>
+        fs.access(skills).then(
+          () => true,
+          () => false,
+        ),
+      ),
+    ).toBe(false)
     const again = yield* AgentDefinition.remove("researcher").pipe(Effect.exit)
     expect(failureTag(again)).toBe("AgentDefinition.NotFoundError")
     for (const name of AgentDefinition.RESERVED) {

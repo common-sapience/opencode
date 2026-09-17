@@ -1,5 +1,6 @@
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import path from "path"
+import fs from "fs/promises"
 import { Effect, Layer, Context, Schema } from "effect"
 import { NamedError } from "@opencode-ai/core/util/error"
 import type { Agent } from "@/agent/agent"
@@ -39,7 +40,27 @@ export const Info = Schema.Struct({
   description: Schema.optional(Schema.String),
   location: Schema.String,
   content: Schema.String,
+  // The agent this skill belongs to (ENG-25): set from the directory it was found in, never from
+  // the file. A skill without an owner is shared by every agent.
+  owner: Schema.optional(Schema.String),
 })
+
+// Agent-owned skills live under `<user config>/agent-skills/<agent>/<skill>/SKILL.md`. Ownership is
+// the directory: moving a skill to a shared skills directory shares it, nothing else changes.
+export const AGENT_SKILLS_DIR = "agent-skills"
+export function agentSkillsRoot() {
+  return path.join(Global.Path.config, AGENT_SKILLS_DIR)
+}
+export function agentSkillsDir(agent: string) {
+  return path.join(agentSkillsRoot(), agent)
+}
+function ownerOf(match: string) {
+  const root = agentSkillsRoot()
+  const relative = path.relative(root, match)
+  if (relative.startsWith("..") || path.isAbsolute(relative)) return undefined
+  const [owner] = relative.split(path.sep)
+  return owner || undefined
+}
 export type Info = Schema.Schema.Type<typeof Info>
 
 const Issue = Schema.StructWithRest(
@@ -82,6 +103,7 @@ export class NotFoundError extends Schema.TaggedErrorClass<NotFoundError>()("Ski
 type State = {
   skills: Record<string, Info>
   dirs: Set<string>
+  signature: string
 }
 
 type DiscoveryState = {
@@ -131,11 +153,13 @@ const add = Effect.fnUntraced(function* (state: State, match: string, events: Ev
   }
 
   state.dirs.add(path.dirname(match))
+  const owner = ownerOf(match)
   state.skills[md.data.name] = {
     name: md.data.name,
     description: md.data.description,
     location: match,
     content: md.content,
+    ...(owner ? { owner } : {}),
   }
 })
 
@@ -207,6 +231,10 @@ const discoverSkills = Effect.fnUntraced(function* (
     yield* scan(state, dir, OPENCODE_SKILL_PATTERN)
   }
 
+  if (yield* fsys.isDir(agentSkillsRoot())) {
+    yield* scan(state, agentSkillsRoot(), SKILL_PATTERN)
+  }
+
   const cfg = yield* config.get()
   for (const item of cfg.skills?.paths ?? []) {
     const expanded = item.startsWith("~/") ? path.join(global.home, item.slice(2)) : item
@@ -270,9 +298,28 @@ const layer = Layer.effect(
         )
       }),
     )
+    // Agent-owned skills are written by agents while the engine runs, so their files are the one
+    // source that must be re-read without a restart: a change in that tree drops the cached list.
+    const signature = Effect.fnUntraced(function* () {
+      const root = agentSkillsRoot()
+      const files = yield* Effect.tryPromise({
+        try: () => Glob.scan(SKILL_PATTERN, { cwd: root, absolute: true, include: "file", symlink: true }),
+        catch: () => [] as string[],
+      }).pipe(Effect.catch(() => Effect.succeed([] as string[])))
+      const stamps = yield* Effect.forEach(files, (file) =>
+        Effect.promise(() =>
+          fs.stat(file).then(
+            (stat) => `${file}:${stat.mtimeMs}`,
+            () => `${file}:missing`,
+          ),
+        ),
+      )
+      return stamps.toSorted().join("\n")
+    })
+
     const state = yield* InstanceState.make(
       Effect.fn("Skill.state")(function* () {
-        const s: State = { skills: {}, dirs: new Set() }
+        const s: State = { skills: {}, dirs: new Set(), signature: yield* signature() }
         // Register the built-in skill BEFORE disk discovery so a user-disk
         // skill with the same name can override it.
         s.skills[CUSTOMIZE_OPENCODE_SKILL_NAME] = {
@@ -286,20 +333,28 @@ const layer = Layer.effect(
       }),
     )
 
-    const get = Effect.fn("Skill.get")(function* (name: string) {
+    const current = Effect.fnUntraced(function* () {
       const s = yield* InstanceState.get(state)
+      if (s.signature === (yield* signature())) return s
+      yield* InstanceState.invalidate(discovered)
+      yield* InstanceState.invalidate(state)
+      return yield* InstanceState.get(state)
+    })
+
+    const get = Effect.fn("Skill.get")(function* (name: string) {
+      const s = yield* current()
       return s.skills[name]
     })
 
     const require = Effect.fn("Skill.require")(function* (name: string) {
-      const s = yield* InstanceState.get(state)
+      const s = yield* current()
       const info = s.skills[name]
       if (info) return info
       return yield* new NotFoundError({ name, available: Object.keys(s.skills).toSorted() })
     })
 
     const all = Effect.fn("Skill.all")(function* () {
-      const s = yield* InstanceState.get(state)
+      const s = yield* current()
       return Object.values(s.skills)
     })
 
@@ -308,10 +363,14 @@ const layer = Layer.effect(
     })
 
     const available = Effect.fn("Skill.available")(function* (agent?: Agent.Info) {
-      const s = yield* InstanceState.get(state)
+      const s = yield* current()
       const list = Object.values(s.skills).toSorted((a, b) => a.name.localeCompare(b.name))
       if (!agent) return list
-      return list.filter((skill) => Permission.evaluate("skill", skill.name, agent.permission).action !== "deny")
+      return list.filter(
+        (skill) =>
+          (!skill.owner || skill.owner === agent.name) &&
+          Permission.evaluate("skill", skill.name, agent.permission).action !== "deny",
+      )
     })
 
     return Service.of({ get, require, all, dirs, available })
