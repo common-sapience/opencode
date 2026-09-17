@@ -119,6 +119,10 @@ const getBase = (appId: string): Configuration => ({
     icon: `resources/icons`,
     category: "Development",
     maintainer: "Common Sapience",
+    // On GNOME Wayland this Electron's native Wayland window never appears although the renderer
+    // runs; XWayland shows it. The switch only takes effect on the command line, so it goes into the
+    // launcher's Exec line rather than into the main process.
+    executableArgs: ["--ozone-platform=x11"],
     executableName: appId,
     desktop: {
       entry: {

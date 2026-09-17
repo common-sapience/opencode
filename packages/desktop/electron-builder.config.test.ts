@@ -103,3 +103,9 @@ test("ships the product configuration and the browser MCP server beside the exec
   })
   expect(config.artifactName).toBe("common-sapience-${os}-${arch}.${ext}")
 })
+
+test("Linux launchers start the app under X11", async () => {
+  const module = await import("./electron-builder.config.ts?linux-x11")
+  const config = module.default as Configuration
+  expect(config.linux?.executableArgs).toEqual(["--ozone-platform=x11"])
+})

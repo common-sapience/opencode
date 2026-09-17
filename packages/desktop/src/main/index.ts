@@ -194,11 +194,6 @@ const main = Effect.gen(function* () {
   const features = app.commandLine.getSwitchValue("enable-features")
   app.commandLine.appendSwitch("enable-features", features ? `${jsCallStackFeature},${features}` : jsCallStackFeature)
   if (!app.isPackaged) app.commandLine.appendSwitch("remote-debugging-port", "9222")
-  // On GNOME Wayland this Electron's native Wayland window never appears although the renderer runs
-  // and reports itself visible; XWayland shows it. An explicit hint from the user still wins.
-  if (process.platform === "linux" && !process.env.ELECTRON_OZONE_PLATFORM_HINT) {
-    app.commandLine.appendSwitch("ozone-platform", "x11")
-  }
 
   if (!app.requestSingleInstanceLock()) {
     app.quit()
