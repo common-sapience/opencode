@@ -4,6 +4,7 @@ import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { TooltipV2 } from "@opencode-ai/ui/v2/tooltip-v2"
 import { WordmarkV2 } from "@opencode-ai/ui/v2/wordmark-v2"
 import { Show, createMemo, createSignal, type Accessor } from "solid-js"
+import { productSingleProvider } from "@/context/settings"
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
 import createPresence from "solid-presence"
@@ -106,6 +107,7 @@ function ProviderTip() {
     () =>
       serverSync().child(sdk().directory)[0].provider_ready &&
       persistedReady() &&
+      !productSingleProvider &&
       providers.paid().length === 0 &&
       Date.now() - persistedState.dismissedAt >= providerTipDismissalDuration,
   )

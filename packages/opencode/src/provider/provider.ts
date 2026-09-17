@@ -294,8 +294,20 @@ export function toPublicInfo(provider: Info): Info {
   )
 }
 
-export function defaultModelIDs<T extends { models: Record<string, { id: string }> }>(providers: Record<string, T>) {
-  return mapValues(providers, (item) => sort(Object.values(item.models))[0].id)
+export function defaultModelIDs<M extends { id: string }>(
+  providers: Record<string, { id: string; models: Record<string, M> }>,
+) {
+  return mapValues(providers, (item) => firstModel(item)!.id)
+}
+
+// The platform gateway lists its models in its own order and the first one is its default; the
+// upstream family ranking is for catalogs that carry no such order.
+export function firstModel<M extends { id: string }>(provider: {
+  id: string
+  models: Record<string, M>
+}): M | undefined {
+  if (provider.id === Product.GATEWAY_PROVIDER) return Object.values(provider.models)[0]
+  return sort(Object.values(provider.models))[0]
 }
 
 export class ModelNotFoundError extends Schema.TaggedErrorClass<ModelNotFoundError>()("ProviderModelNotFoundError", {
@@ -875,9 +887,14 @@ const layer = Layer.effect(
         } else if (providers[gateway]) {
           const info = providers[gateway]
           const baseURL = String(info.options["baseURL"] ?? "")
-          const discovered = yield* Effect.tryPromise(() => Gateway.discover(baseURL, gatewayKey as string)).pipe(
+          const discovered = yield* Effect.tryPromise({
+            try: () => Gateway.discover(baseURL, gatewayKey as string),
+            catch: (error) => error,
+          }).pipe(
             Effect.tapError((error) =>
-              Effect.logWarning("the model gateway's models could not be listed", { error: String(error) }),
+              Effect.logWarning("the model gateway's models could not be listed", {
+                error: error instanceof Error ? error.message : String(error),
+              }),
             ),
             Effect.orElseSucceed((): Record<string, ModelsDev.Model> => ({})),
           )
@@ -1248,7 +1265,7 @@ const layer = Layer.effect(
       const configured = Object.keys(cfg.provider ?? {})
       const provider = Object.values(s.providers).find((p) => configured.length === 0 || configured.includes(p.id))
       if (!provider) return yield* new NoProvidersError()
-      const [model] = sort(Object.values(provider.models))
+      const model = firstModel(provider)
       if (!model) return yield* new NoModelsError({ providerID: provider.id })
       return {
         providerID: provider.id,

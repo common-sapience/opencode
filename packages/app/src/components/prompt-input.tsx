@@ -45,6 +45,7 @@ import { Select } from "@opencode-ai/ui/select"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { ModelSelectorPopover, ModelSelectorPopoverV2 } from "@/components/dialog-select-model"
 import { DialogSelectModelUnpaid } from "@/components/dialog-select-model-unpaid"
+import { productSingleProvider } from "@/context/settings"
 import { DialogSelectModelUnpaidV2 } from "@/components/dialog-select-model-unpaid-v2"
 import { useCommand } from "@/context/command"
 import { usePermission } from "@/context/permission"
@@ -1699,7 +1700,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       classList={{ "animate-in fade-in duration-300": providersShouldFadeIn() }}
                     >
                       <Show
-                        when={props.controls.model.paid}
+                        when={productSingleProvider || props.controls.model.paid}
                         fallback={
                           <TooltipKeybind
                             placement="top"

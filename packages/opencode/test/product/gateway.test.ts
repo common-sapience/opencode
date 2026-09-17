@@ -157,6 +157,21 @@ it.instance("a stored key: the models are listed from the gateway, limits includ
   ),
 )
 
+it.instance("the gateway's default model is the first one it lists", () =>
+  withGateway(answering, (baseURL) =>
+    withEnv(
+      { OPENCODE_AUTH_CONTENT: storedKey, OPENCODE_CONFIG_CONTENT: userAddress(baseURL) },
+      Effect.gen(function* () {
+        const providers = yield* Provider.use.list()
+        expect(Provider.defaultModelIDs(providers)[GATEWAY]).toBe("platform-model-1")
+        const chosen = yield* Provider.use.defaultModel()
+        expect(chosen.providerID).toBe(GATEWAY)
+        expect(String(chosen.modelID)).toBe("platform-model-1")
+      }),
+    ),
+  ),
+)
+
 it.instance("a model the user's configuration also names keeps the configured values", () =>
   withGateway(answering, (baseURL) =>
     withEnv(

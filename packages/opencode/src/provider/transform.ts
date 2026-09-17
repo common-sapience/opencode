@@ -4,6 +4,7 @@ import type { JSONSchema7 } from "@ai-sdk/provider"
 import type * as Provider from "./provider"
 import type * as ModelsDev from "@opencode-ai/core/models-dev"
 import { iife } from "@/util/iife"
+import { Product } from "@/config/product"
 
 type Modality = NonNullable<ModelsDev.Model["modalities"]>["input"][number]
 
@@ -355,6 +356,18 @@ function normalizeMessages(
   return msgs
 }
 
+// The platform gateway rejects a request with any field it does not know (T-02), and the
+// OpenAI-compatible SDK turns an assistant reasoning part into `reasoning_content`. The gateway
+// never asks for earlier reasoning back, so the parts are dropped before the SDK sees them.
+function gatewayParts(msgs: ModelMessage[], model: Provider.Model): ModelMessage[] {
+  if (model.providerID !== Product.GATEWAY_PROVIDER) return msgs
+  return msgs.map((msg) => {
+    if (msg.role !== "assistant" || !Array.isArray(msg.content)) return msg
+    if (!msg.content.some((part) => part.type === "reasoning")) return msg
+    return { ...msg, content: msg.content.filter((part) => part.type !== "reasoning") }
+  })
+}
+
 function applyCaching(msgs: ModelMessage[], model: Provider.Model): ModelMessage[] {
   const system = msgs.filter((msg) => msg.role === "system").slice(0, 2)
   const final = msgs.filter((msg) => msg.role !== "system").slice(-2)
@@ -464,6 +477,7 @@ function mapProviderOptions(
 
 export function message(msgs: ModelMessage[], model: Provider.Model, options: Record<string, unknown>) {
   msgs = unsupportedParts(msgs, model)
+  msgs = gatewayParts(msgs, model)
   msgs = normalizeMessages(msgs, model, options)
   const usesAnthropicAutomaticCaching =
     options.cacheControl !== undefined &&
