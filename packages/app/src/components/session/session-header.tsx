@@ -464,29 +464,18 @@ export function SessionHeader() {
 
                     <div class="hidden md:flex items-center gap-1 shrink-0">
                       <TooltipKeybind
-                        title={language.t("command.review.toggle")}
-                        keybind={command.keybind("review.toggle")}
-                      >
-                        <Button
-                          variant="ghost"
-                          class="group/review-toggle titlebar-icon w-8 h-6 p-0 box-border"
-                          onClick={() => view().reviewPanel.toggle()}
-                          aria-label={language.t("command.review.toggle")}
-                          aria-expanded={view().reviewPanel.opened()}
-                          aria-controls="review-panel"
-                        >
-                          <Icon size="small" name={view().reviewPanel.opened() ? "review-active" : "review"} />
-                        </Button>
-                      </TooltipKeybind>
-
-                      <TooltipKeybind
                         title={language.t("command.fileTree.toggle")}
                         keybind={command.keybind("fileTree.toggle")}
                       >
                         <Button
                           variant="ghost"
                           class="titlebar-icon w-8 h-6 p-0 box-border"
-                          onClick={() => layout.fileTree.toggle()}
+                          onClick={() => {
+                            // One right panel (UI-06): closing the files closes the review with it. The
+                            // review opens on its own only when a file is opened or the agent changes one.
+                            layout.fileTree.toggle()
+                            if (!layout.fileTree.opened()) view().reviewPanel.close()
+                          }}
                           aria-label={language.t("command.fileTree.toggle")}
                           aria-expanded={layout.fileTree.opened()}
                           aria-controls="file-tree-panel"

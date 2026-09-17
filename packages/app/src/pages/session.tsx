@@ -4,18 +4,18 @@ import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { createQuery, skipToken, useMutation, useQueryClient } from "@tanstack/solid-query"
 import {
   batch,
-  ErrorBoundary,
-  onCleanup,
-  Suspense,
-  Show,
-  Match,
-  Switch,
-  createMemo,
-  createEffect,
   createComputed,
+  createEffect,
+  createMemo,
   createSignal,
+  ErrorBoundary,
+  Match,
   on,
+  onCleanup,
   onMount,
+  Show,
+  Suspense,
+  Switch,
   type ParentProps,
   untrack,
 } from "solid-js"
@@ -724,6 +724,12 @@ export default function Page() {
   }
   const reviewCount = () => reviewDiffs().length
   const hasReview = () => reviewCount() > 0
+  // The agent changing a file is what opens the review (UI-06); the user never opens it by hand.
+  createEffect(
+    on(reviewCount, (count, previous) => {
+      if (count > 0 && (previous ?? 0) === 0) openReviewPanel()
+    }),
+  )
   const reviewReady = () => {
     if (reviewMode() === "git" || reviewMode() === "branch") return !vcsQuery.isPending
     return true

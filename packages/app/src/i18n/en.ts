@@ -57,7 +57,7 @@ export const dict = {
   "command.context.addSelection.description": "Add selected lines from the current file",
   "command.input.focus": "Focus input",
   "command.terminal.toggle": "Toggle terminal",
-  "command.fileTree.toggle": "Toggle file tree",
+  "command.fileTree.toggle": "Toggle files panel",
   "command.review.toggle": "Toggle review",
   "command.terminal.new": "New terminal",
   "command.terminal.new.description": "Create a new terminal tab",
