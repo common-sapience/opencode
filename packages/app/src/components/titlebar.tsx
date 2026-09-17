@@ -15,7 +15,7 @@ import { useLocation, useNavigate, useParams } from "@solidjs/router"
 import { IconButton } from "@opencode-ai/ui/icon-button"
 import { Icon } from "@opencode-ai/ui/icon"
 import { Button } from "@opencode-ai/ui/button"
-import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
+import { TooltipKeybind } from "@opencode-ai/ui/tooltip"
 import { IconButtonV2 } from "@opencode-ai/ui/v2/icon-button-v2"
 import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { KeybindV2 } from "@opencode-ai/ui/v2/keybind-v2"
@@ -27,7 +27,7 @@ import { useCommand } from "@/context/command"
 import { useLanguage } from "@/context/language"
 import { useSettings } from "@/context/settings"
 import { WindowsAppMenu } from "./windows-app-menu"
-import { applyPath, backPath, forwardPath } from "./titlebar-history"
+import { applyPath } from "./titlebar-history"
 import { TitlebarTabStrip } from "@/components/titlebar-tab-strip"
 import { makeEventListener } from "@solid-primitives/event-listener"
 import { createMediaQuery } from "@solid-primitives/media"
@@ -117,10 +117,6 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
     })
   })
 
-  const canBack = createMemo(() => history.index > 0)
-  const canForward = createMemo(() => history.index < history.stack.length - 1)
-  const hasProjects = createMemo(() => layout.projects.list().length > 0)
-  const nav = createMemo(() => (useV2Titlebar() ? settings.general.showNavigation() : true))
   const updateState = createMemo<TitlebarUpdatePillState>(() => {
     const installing = props.update?.installing() ?? false
     const version = props.update?.version()
@@ -136,37 +132,6 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
   const v2RightState = createMemo<TitlebarV2RightState>(() => ({
     update: updateState(),
   }))
-
-  const back = () => {
-    const next = backPath(history)
-    if (!next) return
-    setHistory(next.state)
-    navigate(next.to)
-  }
-
-  const forward = () => {
-    const next = forwardPath(history)
-    if (!next) return
-    setHistory(next.state)
-    navigate(next.to)
-  }
-
-  command.register(() => [
-    {
-      id: "common.goBack",
-      title: language.t("common.goBack"),
-      category: language.t("command.category.view"),
-      keybind: "mod+[",
-      onSelect: back,
-    },
-    {
-      id: "common.goForward",
-      title: language.t("common.goForward"),
-      category: language.t("command.category.view"),
-      keybind: "mod+]",
-      onSelect: forward,
-    },
-  ])
 
   return (
     <header
@@ -535,30 +500,6 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
                       "duration-180 ease-in": layout.sidebar.opened(),
                     }}
                   >
-                    <Show when={hasProjects() && nav()}>
-                      <div class="flex items-center gap-0 transition-transform">
-                        <Tooltip placement="bottom" value={language.t("common.goBack")} openDelay={800}>
-                          <Button
-                            variant="ghost"
-                            icon="chevron-left"
-                            class="titlebar-icon w-6 h-6 p-0 box-border"
-                            disabled={!canBack()}
-                            onClick={back}
-                            aria-label={language.t("common.goBack")}
-                          />
-                        </Tooltip>
-                        <Tooltip placement="bottom" value={language.t("common.goForward")} openDelay={800}>
-                          <Button
-                            variant="ghost"
-                            icon="chevron-right"
-                            class="titlebar-icon w-6 h-6 p-0 box-border"
-                            disabled={!canForward()}
-                            onClick={forward}
-                            aria-label={language.t("common.goForward")}
-                          />
-                        </Tooltip>
-                      </div>
-                    </Show>
                     <div id="opencode-titlebar-left" class="flex items-center gap-3 min-w-0 px-2" />
                   </div>
                 </div>

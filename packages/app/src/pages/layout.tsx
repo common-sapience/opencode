@@ -59,12 +59,7 @@ import { useDirectoryPicker } from "@/components/directory-picker"
 import { ServerConnection, useServer } from "@/context/server"
 import { useLanguage, type Locale } from "@/context/language"
 import { pathKey } from "@/utils/path-key"
-import {
-  effectiveWorkspaceOrder,
-  errorMessage,
-  latestRootSession,
-  sortedRootSessions,
-} from "./layout/helpers"
+import { effectiveWorkspaceOrder, errorMessage, latestRootSession, sortedRootSessions } from "./layout/helpers"
 import {
   collectNewSessionDeepLinks,
   collectOpenProjectDeepLinks,
@@ -2095,7 +2090,8 @@ export default function LegacyLayout(props: ParentProps) {
       mobile={mobile}
       opened={() => layout.sidebar.opened()}
       aimMove={aim.move}
-      projects={projects}
+      // One fixed directory (D-04): the project rail has nothing to switch between, so it stays empty.
+      projects={() => []}
       renderProject={(project) => (
         <SortableProject ctx={projectSidebarCtx} project={project} sortNow={sortNow} mobile={mobile} />
       )}
