@@ -776,7 +776,6 @@ export const dict = {
   "session.new.git.none": "Χωρίς Git",
   "session.new.lastModified": "Τελευταία τροποποίηση",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Αναζήτηση {{project}}",
   "session.header.searchFiles": "Αναζήτηση αρχείων",

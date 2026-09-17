@@ -817,7 +817,6 @@ export const dict = {
   "session.new.git.none": "Nema Gita",
   "session.new.lastModified": "Posljednja izmjena",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "Pretraži {{project}}",

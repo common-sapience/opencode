@@ -805,7 +805,6 @@ export const dict = {
   "session.new.git.none": "ไม่มี Git",
   "session.new.lastModified": "แก้ไขล่าสุด",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "ค้นหา {{project}}",

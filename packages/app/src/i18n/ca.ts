@@ -777,7 +777,6 @@ export const dict = {
   "session.new.git.none": "Sense Git",
   "session.new.lastModified": "Última modificació",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Cerca {{project}}",
   "session.header.searchFiles": "Cerca fitxers",

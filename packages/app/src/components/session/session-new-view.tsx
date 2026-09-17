@@ -2,8 +2,6 @@ import { useNavigate } from "@solidjs/router"
 import { createMemo } from "solid-js"
 import { base64Encode } from "@opencode-ai/core/util/encode"
 import { Button } from "@opencode-ai/ui/button"
-import { Select } from "@opencode-ai/ui/select"
-import { BLANK_AGENT, userAgents } from "@/pages/layout/sidebar-agents"
 import { useDirectoryPicker } from "@/components/directory-picker"
 import { useLanguage } from "@/context/language"
 import { useLocal } from "@/context/local"
@@ -54,48 +52,23 @@ export function NewSessionView(_props: NewSessionViewProps) {
     })
   }
 
-  const agents = createMemo(() => userAgents(local.agent.list()))
-  const currentAgent = createMemo(() => {
-    const name = local.agent.current()?.name
-    return agents().find((agent) => agent.name === name) ?? agents()[0]
-  })
-  const agentLabel = (agent: { name: string }) =>
-    agent.name === BLANK_AGENT ? language.t("sidebar.agents.blank") : agent.name
-
   return (
     <div class={ROOT_CLASS}>
       <div class="h-12 shrink-0" aria-hidden />
       <div class="flex-1 px-6 pb-30 flex items-center justify-center text-center">
-        <div class="flex flex-col items-center gap-6">
+        <div class="flex flex-col items-center gap-4">
           <div class="text-20-medium text-text-strong">{language.t("session.new.title")}</div>
-          <div class="grid grid-cols-[auto_auto] items-center gap-x-4 gap-y-2" data-component="session-setup">
-            <span class="text-12-medium text-text-weak text-right">{language.t("session.new.agent")}</span>
-            <div class="flex items-center justify-start">
-              <Select
-                size="normal"
-                variant="ghost"
-                options={agents()}
-                current={currentAgent()}
-                value={(agent) => agent.name}
-                label={agentLabel}
-                onSelect={(agent) => agent && local.agent.set(agent.name)}
-                class="capitalize max-w-[220px]"
-                valueClass="truncate text-13-medium text-text-strong"
-                triggerProps={{ "data-action": "session-agent" }}
-              />
-            </div>
-            <span class="text-12-medium text-text-weak text-right">{language.t("session.new.directory")}</span>
-            <div class="flex items-center justify-start gap-1">
-              <span
-                class="px-2 text-13-medium text-text-strong select-text max-w-[220px] truncate"
-                data-component="session-directory"
-              >
-                {shown()}
-              </span>
-              <Button variant="ghost" size="small" data-action="session-directory-choose" onClick={choose}>
-                {language.t("session.new.directory.choose")}
-              </Button>
-            </div>
+          <div class="flex items-center gap-2 min-h-5">
+            <span class="text-12-medium text-text-weak">{language.t("session.new.directory")}</span>
+            <span
+              class="text-12-medium text-text-strong select-text max-w-160 truncate"
+              data-component="session-directory"
+            >
+              {shown()}
+            </span>
+            <Button variant="ghost" size="small" data-action="session-directory-choose" onClick={choose}>
+              {language.t("session.new.directory.choose")}
+            </Button>
           </div>
         </div>
       </div>

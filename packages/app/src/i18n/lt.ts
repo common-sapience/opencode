@@ -781,7 +781,6 @@ export const dict = {
   "session.new.git.none": "Nėra Git",
   "session.new.lastModified": "Paskutinis modifikuotas",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Ieškoti {{project}}",
   "session.header.searchFiles": "Ieškokite failų",

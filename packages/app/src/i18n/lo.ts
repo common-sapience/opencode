@@ -765,7 +765,6 @@ export const dict = {
   "session.new.git.none": "ບໍ່ມີ Git",
   "session.new.lastModified": "ດັດແກ້ຫຼ້າສຸດ",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "ຄົ້ນຫາ {{project}}",
   "session.header.searchFiles": "ຊອກຫາໄຟລ໌",

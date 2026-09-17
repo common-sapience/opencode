@@ -775,7 +775,6 @@ export const dict = {
   "session.new.git.none": "Nincs Git",
   "session.new.lastModified": "Utoljára módosítva",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Keresés {{project}}",
   "session.header.searchFiles": "Fájlok keresése",

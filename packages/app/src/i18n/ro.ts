@@ -774,7 +774,6 @@ export const dict = {
   "session.new.git.none": "Fără Git",
   "session.new.lastModified": "Ultima modificare",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Caută în {{project}}",
   "session.header.searchFiles": "Caută fișiere",

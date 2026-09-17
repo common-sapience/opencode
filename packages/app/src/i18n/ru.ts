@@ -816,7 +816,6 @@ export const dict = {
   "session.new.git.none": "Нет Git",
   "session.new.lastModified": "Последнее изменение",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "Поиск {{project}}",

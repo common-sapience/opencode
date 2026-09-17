@@ -768,7 +768,6 @@ export const dict = {
   "session.new.git.none": "Git-ის გარეშე",
   "session.new.lastModified": "ბოლო ცვლილება",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "ძებნა {{project}}",
   "session.header.searchFiles": "ფაილების ძიება",

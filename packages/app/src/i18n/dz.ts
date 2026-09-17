@@ -781,7 +781,6 @@ export const dict: Record<string, string> = {
   "session.new.git.none": "མེད། Git།",
   "session.new.lastModified": "མཐའ་མའི་བཟོ་བཅོས་འབད་ཡོདཔ།",
   "session.new.directory": "Working directory",
-  "session.new.agent": "Agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "འཚོལ་ཞིབ་ {{project}}།",
   "session.header.searchFiles": "ཡིག་སྣོད་ཚུ་འཚོལ་ཞིབ་འབད།",
