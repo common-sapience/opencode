@@ -4,7 +4,10 @@ import { TextField } from "@opencode-ai/ui/text-field"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { createStore } from "solid-js/store"
 import { Show } from "solid-js"
+import { useNavigate } from "@solidjs/router"
+import { base64Encode } from "@opencode-ai/core/util/encode"
 import { useLanguage } from "@/context/language"
+import { useServerSync } from "@/context/server-sync"
 import { useServerSDK } from "@/context/server-sdk"
 import { errorMessage } from "@/pages/layout/helpers"
 
@@ -14,6 +17,8 @@ export function DialogCreateAgent() {
   const language = useLanguage()
   const dialog = useDialog()
   const serverSDK = useServerSDK()
+  const serverSync = useServerSync()
+  const navigate = useNavigate()
   const [store, setStore] = createStore({ name: "", description: "", pending: false, error: "" })
 
   const submit = async (event: Event) => {
@@ -34,6 +39,9 @@ export function DialogCreateAgent() {
       })
     if (!result) return
     dialog.close()
+    // A new agent opens its first session right away (UI-03).
+    const home = serverSync().data.path.home
+    if (home) navigate(`/${base64Encode(home)}/session?agent=${encodeURIComponent(result.name)}`)
   }
 
   const ready = () => store.name.trim().length > 0 && store.description.trim().length > 0

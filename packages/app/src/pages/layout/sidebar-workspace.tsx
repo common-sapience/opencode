@@ -488,6 +488,23 @@ export const LocalWorkspace = (props: {
   )
 }
 
+const COLLAPSED_KEY = "opencode.sidebar.agents.collapsed"
+
+// Which agent groups the user folded, per browser; a missing or unreadable store means all open.
+function readCollapsed(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_KEY)
+    const parsed: unknown = raw ? JSON.parse(raw) : {}
+    if (typeof parsed !== "object" || parsed === null) return {}
+    return Object.fromEntries(Object.entries(parsed).filter(([, value]) => typeof value === "boolean")) as Record<
+      string,
+      boolean
+    >
+  } catch {
+    return {}
+  }
+}
+
 const AgentSessionList = (props: {
   slug: Accessor<string>
   mobile?: boolean
@@ -502,6 +519,13 @@ const AgentSessionList = (props: {
   const agents = createMemo(() => userAgents(props.agents()))
   const grouped = createMemo(() => groupSessionsByAgent(agents(), props.sessions()))
   const label = (agent: Agent) => (agent.name === BLANK_AGENT ? props.language.t("sidebar.agents.blank") : agent.name)
+  const [collapsed, setCollapsed] = createStore<Record<string, boolean>>(readCollapsed())
+  const toggle = (name: string) => {
+    setCollapsed(name, (value) => !value)
+    try {
+      localStorage.setItem(COLLAPSED_KEY, JSON.stringify(collapsed))
+    } catch {}
+  }
   return (
     <nav class="flex flex-col gap-3">
       <Show when={props.loading()}>
@@ -510,15 +534,30 @@ const AgentSessionList = (props: {
       <For each={agents()}>
         {(agent) => {
           const sessions = createMemo(() => grouped().get(agent.name) ?? [])
+          const open = () => !collapsed[agent.name]
           const newHref = () => `/${props.slug()}/session?agent=${encodeURIComponent(agent.name)}`
           return (
             <div class="group/agent flex flex-col gap-1" data-component="sidebar-agent" data-agent={agent.name}>
-              <div class="flex items-center gap-2 min-w-0 pl-2 pr-1">
-                <Tooltip value={agent.description ?? label(agent)} placement="right" class="min-w-0 flex-1">
-                  <span class="block text-12-medium text-text-weak uppercase tracking-wide truncate">
-                    {label(agent)}
-                  </span>
-                </Tooltip>
+              <div class="flex items-center gap-1 min-w-0 pr-1">
+                <button
+                  type="button"
+                  class="flex items-center gap-1 min-w-0 flex-1 pl-1 py-0.5 rounded-md text-left hover:bg-surface-base-hover focus:outline-none"
+                  data-action="agent-toggle"
+                  data-agent={agent.name}
+                  aria-expanded={open()}
+                  onClick={() => toggle(agent.name)}
+                >
+                  <IconV2
+                    name={open() ? "chevron-down" : "chevron-right"}
+                    size="small"
+                    class="text-icon-weak shrink-0"
+                  />
+                  <Tooltip value={agent.description ?? label(agent)} placement="right" class="min-w-0 flex-1">
+                    <span class="block text-12-medium text-text-weak uppercase tracking-wide truncate">
+                      {label(agent)}
+                    </span>
+                  </Tooltip>
+                </button>
                 <Tooltip value={props.language.t("command.session.new")} placement="top">
                   <A
                     href={newHref()}
@@ -532,36 +571,38 @@ const AgentSessionList = (props: {
                   </A>
                 </Tooltip>
               </div>
-              <Show
-                when={sessions().length > 0}
-                fallback={
-                  <A
-                    href={newHref()}
-                    class="flex items-center gap-2 min-w-0 w-full text-left py-1 pl-2 text-14-regular text-text-weak focus:outline-none"
-                    data-action="agent-new-session"
-                    data-agent={agent.name}
-                    onClick={() => props.ctx.clearHoverProjectSoon()}
-                  >
-                    {props.language.t("sidebar.agents.empty")}
-                  </A>
-                }
-              >
-                <For each={sessions()}>
-                  {(session) => (
-                    <SessionItem
-                      session={session}
-                      list={sessions()}
-                      navList={props.ctx.navList}
-                      slug={props.slug()}
-                      mobile={props.mobile}
-                      showChild
-                      sidebarExpanded={props.ctx.sidebarExpanded}
-                      clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
-                      prefetchSession={props.ctx.prefetchSession}
-                      archiveSession={props.ctx.archiveSession}
-                    />
-                  )}
-                </For>
+              <Show when={open()}>
+                <Show
+                  when={sessions().length > 0}
+                  fallback={
+                    <A
+                      href={newHref()}
+                      class="flex items-center gap-2 min-w-0 w-full text-left py-1 pl-2 text-14-regular text-text-weak focus:outline-none"
+                      data-action="agent-new-session"
+                      data-agent={agent.name}
+                      onClick={() => props.ctx.clearHoverProjectSoon()}
+                    >
+                      {props.language.t("sidebar.agents.empty")}
+                    </A>
+                  }
+                >
+                  <For each={sessions()}>
+                    {(session) => (
+                      <SessionItem
+                        session={session}
+                        list={sessions()}
+                        navList={props.ctx.navList}
+                        slug={props.slug()}
+                        mobile={props.mobile}
+                        showChild
+                        sidebarExpanded={props.ctx.sidebarExpanded}
+                        clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
+                        prefetchSession={props.ctx.prefetchSession}
+                        archiveSession={props.ctx.archiveSession}
+                      />
+                    )}
+                  </For>
+                </Show>
               </Show>
             </div>
           )

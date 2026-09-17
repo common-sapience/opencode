@@ -1900,7 +1900,6 @@ export default function LegacyLayout(props: ParentProps) {
     const merged = createMemo(() => panelProps.mobile || (panelProps.merged ?? layout.sidebar.opened()))
     const hover = createMemo(() => !panelProps.mobile && panelProps.merged === false && !layout.sidebar.opened())
     const empty = createMemo(() => !params.dir && layout.projects.list().length === 0)
-    const worktree = createMemo(() => project()?.worktree ?? "")
     const workspaces = createMemo(() => {
       const item = project()
       if (!item) return [] as string[]
@@ -1954,16 +1953,6 @@ export default function LegacyLayout(props: ParentProps) {
               <div class="shrink-0 pl-1 py-1">
                 <div class="flex items-center justify-between gap-2 py-2 pl-2 pr-0">
                   <span class="text-14-medium text-text-strong truncate">{language.t("sidebar.agents.title")}</span>
-                  <Tooltip placement="bottom" value={language.t("sidebar.agents.new")}>
-                    <IconButton
-                      icon="plus-small"
-                      variant="ghost"
-                      data-action="agent-create"
-                      class="shrink-0 size-6 rounded-md"
-                      aria-label={language.t("sidebar.agents.new")}
-                      onClick={() => dialog.show(() => <DialogCreateAgent />)}
-                    />
-                  </Tooltip>
                 </div>
               </div>
 
@@ -1976,14 +1965,11 @@ export default function LegacyLayout(props: ParentProps) {
                         <Button
                           size="large"
                           class="w-full"
-                          onClick={() => {
-                            const dir = worktree()
-                            if (!dir) return
-                            navigateWithSidebarReset(`/${base64Encode(dir)}/session`)
-                          }}
+                          data-action="agent-create"
+                          onClick={() => dialog.show(() => <DialogCreateAgent />)}
                         >
-                          <IconV2 name="edit" size="small" />
-                          {language.t("command.session.new")}
+                          <IconV2 name="plus-small" size="small" />
+                          {language.t("sidebar.agents.new")}
                         </Button>
                       </div>
                       <div class="flex-1 min-h-0">
