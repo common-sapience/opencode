@@ -1,4 +1,4 @@
-import { ServerConnection, useServer, useSettings, useTabs } from "@opencode-ai/app"
+import { useServer, useSettings, useTabs } from "@opencode-ai/app"
 import { onMount } from "solid-js"
 
 export function DesktopFirstLaunchOnboarding(props: { initialUrl: string; onLoaded: () => void }) {
@@ -23,28 +23,9 @@ export function DesktopFirstLaunchOnboarding(props: { initialUrl: string; onLoad
       const pending = await window.api.isFirstLaunchOnboardingPending()
       if (!pending) return
 
-      const shouldTrigger =
-        !existingInstall &&
-        props.initialUrl === "/" &&
-        tabs.store.length === 0 &&
-        server.list.every(ServerConnection.builtin)
-
-      console.info("[desktop-onboarding] first launch onboarding evaluated", {
-        pending,
-        shouldTrigger,
-        existingInstall,
-        initialUrl: props.initialUrl,
-        tabs: tabs.store.length,
-        servers: server.list.map(ServerConnection.key),
-      })
-
-      const directory = await window.api.finishFirstLaunchOnboarding(shouldTrigger)
-      if (!shouldTrigger || !directory) return
-
-      console.info("[desktop-onboarding] starting first launch draft", { directory })
-      server.projects.open(directory)
-      server.projects.touch(directory)
-      tabs.select(await tabs.newDraft({ server: server.key, directory }))
+      // The product has no projects: every session works in the home directory (UI-01, D-04), so a
+      // first launch is marked done without creating upstream's "Default Project" or a draft in it.
+      await window.api.finishFirstLaunchOnboarding(false)
     } catch (error) {
       console.error("[desktop-onboarding] first launch onboarding failed", error)
     }
