@@ -1950,11 +1950,7 @@ export default function LegacyLayout(props: ParentProps) {
         >
           {(project) => (
             <>
-              <div class="shrink-0 pl-1 py-1">
-                <div class="flex items-center justify-between gap-2 py-2 pl-2 pr-0">
-                  <span class="text-14-medium text-text-strong truncate">{language.t("sidebar.agents.title")}</span>
-                </div>
-              </div>
+              <div class="shrink-0 h-2" aria-hidden />
 
               <div class="flex-1 min-h-0 flex flex-col">
                 <Show
