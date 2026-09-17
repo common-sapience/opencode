@@ -29,7 +29,7 @@ import { DialogArchivedSessions } from "@/components/dialog-archived-sessions"
 import { getFilename } from "@opencode-ai/core/util/path"
 import { Session } from "@opencode-ai/sdk/v2/client"
 import { usePlatform } from "@/context/platform"
-import { useSettings } from "@/context/settings"
+import { productSingleProvider, useSettings } from "@/context/settings"
 import { createStore, produce, reconcile } from "solid-js/store"
 import { DragDropProvider, DragDropSensors, DragOverlay, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd"
 import type { DragEvent } from "@thisbeyond/solid-dnd"
@@ -1091,6 +1091,7 @@ export default function LegacyLayout(props: ParentProps) {
   })
 
   function connectProvider() {
+    if (productSingleProvider) return openSettings("providers")
     const run = ++dialogRun
     void import("@/components/dialog-connect-provider").then((x) => {
       if (dialogDead || dialogRun !== run) return
@@ -1106,14 +1107,14 @@ export default function LegacyLayout(props: ParentProps) {
     })
   }
 
-  function openSettings() {
+  function openSettings(tab?: string) {
     const run = ++dialogRun
     const module = settings.general.newLayoutDesigns()
       ? import("@/components/settings-v2")
       : import("@/components/dialog-settings")
     void module.then((x) => {
       if (dialogDead || dialogRun !== run) return
-      dialog.show(() => <x.DialogSettings />)
+      dialog.show(() => <x.DialogSettings defaultValue={tab} />)
     })
   }
 
@@ -2053,7 +2054,10 @@ export default function LegacyLayout(props: ParentProps) {
         <div
           class="shrink-0 px-3 py-3"
           classList={{
-            hidden: store.gettingStartedDismissed || !(providers.all().size > 0 && providers.paid().length === 0),
+            hidden:
+              productSingleProvider ||
+              store.gettingStartedDismissed ||
+              !(providers.all().size > 0 && providers.paid().length === 0),
           }}
         >
           <div class="rounded-xl bg-background-base shadow-xs-border-base" data-component="getting-started">
@@ -2093,7 +2097,7 @@ export default function LegacyLayout(props: ParentProps) {
               variant="ghost"
               size="large"
               data-action="sidebar-settings"
-              onClick={openSettings}
+              onClick={() => openSettings()}
               aria-label={language.t("sidebar.settings")}
             />
           </TooltipKeybind>

@@ -16,6 +16,7 @@ import { useLocal } from "@/context/local"
 import { popularProviders } from "@/hooks/use-providers"
 import { useLanguage } from "@/context/language"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
+import { productSingleProvider } from "@/context/settings"
 import { DialogConnectProvider } from "./dialog-connect-provider"
 import { decode64 } from "@/utils/base64"
 import { SettingsListV2 } from "./settings-v2/parts/list"
@@ -48,9 +49,11 @@ export const DialogManageModels: Component = () => {
       title={language.t("dialog.model.manage")}
       description={language.t("dialog.model.manage.description")}
       action={
-        <Button class="h-7 -my-1 text-14-medium" icon="plus-small" tabIndex={-1} onClick={handleConnectProvider}>
-          {language.t("command.provider.connect")}
-        </Button>
+        <Show when={!productSingleProvider}>
+          <Button class="h-7 -my-1 text-14-medium" icon="plus-small" tabIndex={-1} onClick={handleConnectProvider}>
+            {language.t("command.provider.connect")}
+          </Button>
+        </Show>
       }
     >
       <List
@@ -160,9 +163,11 @@ export const DialogManageModelsV2: Component = () => {
           title={language.t("dialog.model.manage")}
           description={language.t("dialog.model.manage.description")}
         />
-        <ButtonV2 variant="neutral" icon="plus" onClick={handleConnectProvider}>
-          {language.t("command.provider.connect")}
-        </ButtonV2>
+        <Show when={!productSingleProvider}>
+          <ButtonV2 variant="neutral" icon="plus" onClick={handleConnectProvider}>
+            {language.t("command.provider.connect")}
+          </ButtonV2>
+        </Show>
       </DialogHeader>
       <DialogBody class="flex min-h-0 flex-1 flex-col">
         <div class="px-4 pt-px pb-3">

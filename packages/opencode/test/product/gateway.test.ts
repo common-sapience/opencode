@@ -37,7 +37,7 @@ const it = testEffect(
   ),
 )
 
-const BASE_URL = "https://openrouter.ai/api/v1"
+const BASE_URL = "https://commonsapience.com/v1"
 const API_KEY = "product-test-key"
 const MODEL_ID = "platform-model-1"
 const GATEWAY = ProviderV2.ID.make(Product.GATEWAY_PROVIDER)

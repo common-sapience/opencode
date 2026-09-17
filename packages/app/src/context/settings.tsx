@@ -63,6 +63,9 @@ export const newLayoutDesignsDefault = true
 // so upstream's tabbed layout is never selected and the sidebar layout has no sunset.
 export const productSidebarLayout = true
 export const oldInterfaceSunset = undefined as Date | undefined
+// The product ships one provider, the platform model gateway (ENG-12): the client offers no way to
+// connect another, and the key is entered on the settings providers tab.
+export const productSingleProvider = true
 const newLayoutDesignsUpgradeCutoff = "1.17.19"
 
 function compareVersions(a: string, b: string) {
