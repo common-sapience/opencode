@@ -846,6 +846,8 @@ export const dict = {
   "session.new.workspace.existing": "Робоча область…",
   "session.new.git.none": "Немає Git",
   "session.new.lastModified": "Востаннє змінено",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "Пошук {{project}}",
   "session.header.searchFiles": "Пошук файлів",

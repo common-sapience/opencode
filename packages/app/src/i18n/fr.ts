@@ -768,6 +768,8 @@ export const dict = {
   "session.new.workspace.existing": "Espace de travail…",
   "session.new.git.none": "Pas de Git",
   "session.new.lastModified": "Dernière modification",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Rechercher {{project}}",
   "session.header.searchFiles": "Rechercher des fichiers",
   "session.header.openIn": "Ouvrir dans",

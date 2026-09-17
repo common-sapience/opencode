@@ -777,6 +777,8 @@ export const dict = {
   "session.new.workspace.existing": "Werkruimte…",
   "session.new.git.none": "Geen Git",
   "session.new.lastModified": "Laatst gewijzigd",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Zoek {{project}}",
   "session.header.searchFiles": "Zoek bestanden",
   "session.header.openIn": "Openen in",

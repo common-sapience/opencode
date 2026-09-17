@@ -767,6 +767,8 @@ export const dict = {
   "session.new.workspace.existing": "სამუშაო სივრცე…",
   "session.new.git.none": "Git-ის გარეშე",
   "session.new.lastModified": "ბოლო ცვლილება",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "ძებნა {{project}}",
   "session.header.searchFiles": "ფაილების ძიება",
   "session.header.openIn": "გახსნა",

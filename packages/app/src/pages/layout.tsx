@@ -520,13 +520,15 @@ export default function LegacyLayout(props: ParentProps) {
 
     const [child] = serverSync().child(directory, { bootstrap: false })
     const id = child.project
-    if (!id) return
+    if (!id) return projects[0]
 
     const meta = serverSync().data.project.find((p) => p.id === id)
     const root = meta?.worktree
-    if (!root) return
+    // A session may run in any directory (UI-08); the sidebar always belongs to the one opened
+    // project, so anything unmatched falls back to it.
+    if (!root) return projects[0]
 
-    return projects.find((p) => p.worktree === root)
+    return projects.find((p) => p.worktree === root) ?? projects[0]
   })
 
   const [autoselecting] = createResource(async () => {

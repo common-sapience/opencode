@@ -767,6 +767,8 @@ export const dict: Record<string, string> = {
   "session.new.workspace.existing": "ওয়ার্কস্পেস…",
   "session.new.git.none": "না Git",
   "session.new.lastModified": "সর্বশেষ সংশোধন করা হয়েছে",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "অনুসন্ধান করুন {{project}}",
   "session.header.searchFiles": "ফাইল অনুসন্ধান করুন",
   "session.header.openIn": "খুলুন",

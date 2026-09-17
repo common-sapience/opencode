@@ -751,6 +751,8 @@ export const dict = {
   "session.new.workspace.existing": "ワークスペース…",
   "session.new.git.none": "Git なし",
   "session.new.lastModified": "最終更新",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}}を検索",
   "session.header.searchFiles": "ファイルを検索",
   "session.header.openIn": "で開く",

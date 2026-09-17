@@ -816,6 +816,8 @@ export const dict = {
   "session.new.workspace.existing": "Radni prostor…",
   "session.new.git.none": "Nema Gita",
   "session.new.lastModified": "Posljednja izmjena",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "Pretraži {{project}}",
   "session.header.searchFiles": "Pretraži datoteke",

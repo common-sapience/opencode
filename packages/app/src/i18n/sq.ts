@@ -773,6 +773,8 @@ export const dict = {
   "session.new.workspace.existing": "Hapësira e punës…",
   "session.new.git.none": "Jo Git",
   "session.new.lastModified": "Ndryshuar së fundi",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Kërko {{project}}",
   "session.header.searchFiles": "Kërko skedarët",
   "session.header.openIn": "Hape brenda",

@@ -798,6 +798,8 @@ export const dict = {
   "session.new.workspace.existing": "工作區…",
   "session.new.git.none": "無 Git",
   "session.new.lastModified": "最後修改",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "搜尋 {{project}}",
   "session.header.searchFiles": "搜尋檔案",

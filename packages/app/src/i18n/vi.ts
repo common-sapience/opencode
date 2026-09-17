@@ -778,6 +778,8 @@ export const dict = {
   "session.new.workspace.existing": "Không gian làm việc…",
   "session.new.git.none": "Không dùng Git",
   "session.new.lastModified": "Sửa đổi lần cuối",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Tìm kiếm {{project}}",
   "session.header.searchFiles": "Tìm kiếm tệp",
   "session.header.openIn": "Mở trong",

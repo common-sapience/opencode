@@ -772,6 +772,8 @@ export const dict = {
   "session.new.workspace.existing": "Աշխատանքային տարածք…",
   "session.new.git.none": "Առանց Git-ի",
   "session.new.lastModified": "Վերջին փոփոխությունը",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Որոնում {{project}}",
   "session.header.searchFiles": "Որոնել ֆայլեր",
   "session.header.openIn": "Բացել",

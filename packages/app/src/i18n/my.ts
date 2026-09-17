@@ -775,6 +775,8 @@ export const dict = {
   "session.new.workspace.existing": "အလုပ်နေရာ…",
   "session.new.git.none": "Git မရှိပါ။",
   "session.new.lastModified": "နောက်ဆုံးမွမ်းမံထားသည်။",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}} ကိုရှာပါ။",
   "session.header.searchFiles": "ဖိုင်များကို ရှာဖွေပါ။",
   "session.header.openIn": "ဖွင့်ပါ။",

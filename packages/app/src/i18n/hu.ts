@@ -774,6 +774,8 @@ export const dict = {
   "session.new.workspace.existing": "Munkaterület…",
   "session.new.git.none": "Nincs Git",
   "session.new.lastModified": "Utoljára módosítva",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Keresés {{project}}",
   "session.header.searchFiles": "Fájlok keresése",
   "session.header.openIn": "Nyissa meg",

@@ -194,6 +194,16 @@ it.instance("ENG-19: the product config registers the memory skill and the dream
   ),
 )
 
+it.instance("ENG-23: the product config turns file snapshots off", () =>
+  withProduct(() =>
+    Effect.gen(function* () {
+      // Every session works in the home directory (D-04); a git snapshot of it before each
+      // message takes tens of seconds and serialises on one index lock.
+      expect((yield* Config.Service.use((svc) => svc.get())).snapshot).toBe(false)
+    }),
+  ),
+)
+
 it.instance("ENG-22: the product config disables the upstream build and plan modes", () =>
   withProduct(() =>
     Effect.gen(function* () {

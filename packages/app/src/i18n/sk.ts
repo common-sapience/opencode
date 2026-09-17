@@ -772,6 +772,8 @@ export const dict = {
   "session.new.workspace.existing": "Pracovný priestor…",
   "session.new.git.none": "Bez Git",
   "session.new.lastModified": "Naposledy upravené",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Hľadať v {{project}}",
   "session.header.searchFiles": "Hľadať súbory",
   "session.header.openIn": "Otvoriť v",

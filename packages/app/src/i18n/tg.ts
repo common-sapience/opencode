@@ -770,6 +770,8 @@ export const dict = {
   "session.new.workspace.existing": "Фазои корӣ…",
   "session.new.git.none": "Не Git",
   "session.new.lastModified": "Охирин тағир дода шудааст",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Ҷустуҷӯ {{project}}",
   "session.header.searchFiles": "Ҷустуҷӯи файлҳо",
   "session.header.openIn": "Кушодан дар",

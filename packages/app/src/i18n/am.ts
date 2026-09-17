@@ -756,6 +756,8 @@ export const dict = {
   "session.new.workspace.existing": "Workspace…",
   "session.new.git.none": "ያለ Git",
   "session.new.lastModified": "መጨረሻ የተሻሻለው",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "ፍለጋ {{project}}",
   "session.header.searchFiles": "ፋይሎችን ይፈልጉ",
   "session.header.openIn": "ክፍት ውስጥ",

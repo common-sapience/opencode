@@ -780,6 +780,8 @@ export const dict = {
   "session.new.workspace.existing": "ورک اسپیس…",
   "session.new.git.none": "کوئی Git نہیں۔",
   "session.new.lastModified": "آخری بار ترمیم کی گئی۔",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}} تلاش کریں۔",
   "session.header.searchFiles": "فائلیں تلاش کریں۔",
   "session.header.openIn": "اس میں کھولیں",

@@ -804,6 +804,8 @@ export const dict = {
   "session.new.workspace.existing": "พื้นที่ทำงาน…",
   "session.new.git.none": "ไม่มี Git",
   "session.new.lastModified": "แก้ไขล่าสุด",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "ค้นหา {{project}}",
   "session.header.searchFiles": "ค้นหาไฟล์",

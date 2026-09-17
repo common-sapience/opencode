@@ -773,6 +773,8 @@ export const dict = {
   "session.new.workspace.existing": "Arbetsyta...",
   "session.new.git.none": "Ingen Git",
   "session.new.lastModified": "Senast ändrad",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Sök {{project}}",
   "session.header.searchFiles": "Sök filer",
   "session.header.openIn": "Öppna i",

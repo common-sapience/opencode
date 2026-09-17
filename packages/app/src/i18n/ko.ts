@@ -514,6 +514,8 @@ export const dict = {
   "session.new.worktree.mainWithBranch": "메인 브랜치 ({{branch}})",
   "session.new.worktree.create": "새 작업 트리 생성",
   "session.new.lastModified": "최근 수정",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}} 검색",
   "session.header.searchFiles": "파일 검색",
   "session.header.openIn": "다음에서 열기",

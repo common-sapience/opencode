@@ -1,3 +1,4 @@
+import { base64Encode } from "@opencode-ai/core/util/encode"
 import type { Session } from "@opencode-ai/sdk/v2/client"
 import { Avatar } from "@opencode-ai/ui/avatar"
 import { Icon } from "@opencode-ai/ui/icon"
@@ -108,7 +109,7 @@ const SessionRow = (props: {
 
   return (
     <A
-      href={`/${props.slug}/session/${props.session.id}`}
+      href={`/${base64Encode(props.session.directory)}/session/${props.session.id}`}
       class={`flex items-center gap-2 min-w-0 w-full text-left focus:outline-none ${props.dense ? "py-0.5" : "py-1"}`}
       onPointerDown={props.warmPress}
       onFocus={props.warmFocus}

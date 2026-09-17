@@ -772,6 +772,8 @@ export const dict = {
   "session.new.workspace.existing": "Darbtelpa…",
   "session.new.git.none": "Nav Git",
   "session.new.lastModified": "Pēdējoreiz mainīts",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Meklēt {{project}}",
   "session.header.searchFiles": "Meklēt failus",
   "session.header.openIn": "Atvērt ar",

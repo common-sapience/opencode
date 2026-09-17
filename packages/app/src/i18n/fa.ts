@@ -766,6 +766,8 @@ export const dict = {
   "session.new.workspace.existing": "فضای کاری…",
   "session.new.git.none": "Git وجود ندارد",
   "session.new.lastModified": "آخرین تغییر",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "جستجوی {{project}}",
   "session.header.searchFiles": "جستجو در فایل ها",
   "session.header.openIn": "باز کردن در",

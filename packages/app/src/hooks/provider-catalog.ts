@@ -32,6 +32,9 @@ export function resolveDefaultModel(
 ) {
   if (current !== undefined) return current ?? undefined
   if (!legacy) return undefined
-  const [providerID, modelID] = legacy.split("/")
-  return { providerID, modelID }
+  // A model id may itself contain "/" (gateway ids such as "~openai/gpt-astra-latest"), so only the
+  // first separator divides provider from model.
+  const separator = legacy.indexOf("/")
+  if (separator <= 0 || separator === legacy.length - 1) return undefined
+  return { providerID: legacy.slice(0, separator), modelID: legacy.slice(separator + 1) }
 }

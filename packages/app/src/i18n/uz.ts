@@ -772,6 +772,8 @@ export const dict = {
   "session.new.workspace.existing": "Ish maydoni…",
   "session.new.git.none": "Git yo'q",
   "session.new.lastModified": "Oxirgi tahrirlangan",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Qidiruv {{project}}",
   "session.header.searchFiles": "Fayllarni qidirish",
   "session.header.openIn": "Ochish",

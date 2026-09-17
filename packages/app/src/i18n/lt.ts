@@ -780,6 +780,8 @@ export const dict = {
   "session.new.workspace.existing": "Darbo sritis…",
   "session.new.git.none": "Nėra Git",
   "session.new.lastModified": "Paskutinis modifikuotas",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Ieškoti {{project}}",
   "session.header.searchFiles": "Ieškokite failų",
   "session.header.openIn": "Atidaryti",

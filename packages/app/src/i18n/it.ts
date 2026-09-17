@@ -687,6 +687,8 @@ export const dict = {
   "session.new.workspace.existing": "Area di lavoro...",
   "session.new.git.none": "Senza Git",
   "session.new.lastModified": "Ultima modifica",
+  "session.new.directory": "Working directory",
+  "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Cerca {{project}}",
   "session.header.searchFiles": "Cerca file",
   "session.header.openIn": "Apri in",
