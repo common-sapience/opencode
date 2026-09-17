@@ -28,7 +28,10 @@ export type { ProjectAvatarVariant }
 
 const AVATAR_COLOR_KEYS = ["pink", "mint", "orange", "purple", "cyan", "lime"] as const
 const DEFAULT_SIDEBAR_WIDTH = 344
-const DEFAULT_FILE_TREE_WIDTH = 200
+// The files panel cannot go below its minimum, so the default and every stored width are clamped
+// here: the chat column is sized from this same value, and a narrower value clipped the panel.
+export const FILE_TREE_WIDTH_MIN = 240
+const DEFAULT_FILE_TREE_WIDTH = 280
 const DEFAULT_SESSION_WIDTH = 600
 const DEFAULT_TERMINAL_HEIGHT = 280
 const DEFAULT_REVIEW_PANEL_OPENED = false
@@ -703,7 +706,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
       },
       fileTree: {
         opened: createMemo(() => store.fileTree?.opened ?? true),
-        width: createMemo(() => store.fileTree?.width ?? DEFAULT_FILE_TREE_WIDTH),
+        width: createMemo(() => Math.max(FILE_TREE_WIDTH_MIN, store.fileTree?.width ?? DEFAULT_FILE_TREE_WIDTH)),
         tab: createMemo(() => store.fileTree?.tab ?? "all"),
         setTab(tab: "changes" | "all") {
           if (!store.fileTree) {
