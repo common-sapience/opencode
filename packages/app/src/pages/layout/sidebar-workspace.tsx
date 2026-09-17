@@ -17,12 +17,14 @@ import { Tooltip } from "@opencode-ai/ui/tooltip"
 import { type Agent, type Session } from "@opencode-ai/sdk/v2/client"
 import { type LocalProject } from "@/context/layout"
 import { useServerSync, useQueryOptions } from "@/context/server-sync"
+import { useServerSDK } from "@/context/server-sdk"
+import { loadHomeSessionIndex, type HomeSessionEvents } from "@/context/global-sync/home-session-index"
 import { useLanguage } from "@/context/language"
 import { pathKey } from "@/utils/path-key"
 import { NewSessionItem, SessionItem, SessionSkeleton } from "./sidebar-items"
 import { sortedRootSessions } from "./helpers"
 import { BLANK_AGENT, groupSessionsByAgent, userAgents } from "./sidebar-agents"
-import { useIsFetching } from "@tanstack/solid-query"
+import { useIsFetching, useQuery } from "@tanstack/solid-query"
 
 type InlineEditorComponent = (props: {
   id: string
@@ -451,22 +453,47 @@ export const LocalWorkspace = (props: {
   mobile?: boolean
 }): JSX.Element => {
   const serverSync = useServerSync()
-  const queryOptions = useQueryOptions()
+  const serverSDK = useServerSDK()
   const language = useLanguage()
   const workspace = createMemo(() => {
-    const [store, setStore] = serverSync().child(props.project.worktree)
-    return { store, setStore }
+    const [store] = serverSync().child(props.project.worktree)
+    return { store }
   })
   const slug = createMemo(() => base64Encode(props.project.worktree))
-  const sessions = createMemo(() => sortedRootSessions(workspace().store, props.sortNow()))
-  const count = createMemo(() => sessions()?.length ?? 0)
-  const fetching = useIsFetching(() => queryOptions().sessions(pathKey(props.project.worktree)))
-  const hasMore = createMemo(() => workspace().store.sessionTotal > count())
-  const loading = () => fetching() > 0 && count() === 0
-  const loadMore = async () => {
-    workspace().setStore("limit", (limit) => (limit ?? 0) + 5)
-    await serverSync().project.loadSessions(props.project.worktree)
-  }
+  // Sessions come from the server-wide index, not the one project's store: a session may run in
+  // any directory, and a directory that is a repository is a project of its own (UI-08).
+  const home = () => serverSync().homeSessions
+  const eventLoad = useQuery(() => ({
+    queryKey: home().eventsKey,
+    queryFn: async (): Promise<HomeSessionEvents> => ({ sequence: 0, entries: [] }),
+    initialData: { sequence: 0, entries: [] } satisfies HomeSessionEvents,
+    enabled: false,
+  }))
+  const indexLoad = useQuery(() => ({
+    queryKey: home().indexKey,
+    queryFn: async ({ signal }) => {
+      const cache = home()
+      const eventSequence = cache.eventSequence()
+      const index = await loadHomeSessionIndex(
+        (input, options) => serverSDK().client.v2.session.list(input, options),
+        eventSequence,
+        signal,
+      )
+      cache.complete(eventSequence)
+      return index
+    },
+    retry: false,
+    staleTime: 30_000,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+  }))
+  const sessions = createMemo(() =>
+    home()
+      .sessions(indexLoad.data, eventLoad.data)
+      .filter((session) => !session.parentID && session.time.archived === undefined)
+      .sort((a, b) => (b.time.updated ?? b.time.created) - (a.time.updated ?? a.time.created)),
+  )
+  const loading = () => indexLoad.isLoading && sessions().length === 0
 
   return (
     <div
@@ -480,8 +507,8 @@ export const LocalWorkspace = (props: {
         agents={() => workspace().store.agent ?? []}
         loading={loading}
         sessions={sessions}
-        hasMore={hasMore}
-        loadMore={loadMore}
+        hasMore={() => false}
+        loadMore={async () => {}}
         language={language}
       />
     </div>
