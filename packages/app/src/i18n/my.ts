@@ -1091,6 +1091,7 @@ export const dict = {
   "settings.providers.description": "ဝန်ဆောင်မှုပေးသူ ဆက်တင်များကို ဤနေရာတွင် ပြင်ဆင်သတ်မှတ်နိုင်ပါမည်။",
   "settings.providers.section.connected": "ချိတ်ဆက်ထားသော ဝန်ဆောင်မှုပေးသူများ",
   "settings.providers.connected.empty": "ချိတ်ဆက်ပေးသူ မရှိပါ။",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "သင့်ပတ်ဝန်းကျင် ကိန်းရှင်များမှ ချိတ်ဆက်ထားသည်။",
   "settings.providers.section.popular": "လူကြိုက်များသော ဝန်ဆောင်မှုပေးသူများ",
   "settings.providers.custom.description": "အခြေခံ URL ဖြင့် OpenAI-သဟဇာတ ပံ့ပိုးပေးသူကို ထည့်ပါ။",

@@ -1047,6 +1047,7 @@ export const dict = {
   "settings.providers.description": "የአቅራቢዎች መቼቶች እዚህ ሊዋቀሩ ይችላሉ።",
   "settings.providers.section.connected": "የተገናኙ አቅራቢዎች",
   "settings.providers.connected.empty": "ምንም የተገናኙ አቅራቢዎች የሉም",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "ከአካባቢዎ ተለዋዋጮች ጋር የተገናኘ",
   "settings.providers.section.popular": "ታዋቂ አቅራቢዎች",
   "settings.providers.custom.description": "OpenAI-ተኳሃኝ አቅራቢን በመሠረት URL ያክሉ።",

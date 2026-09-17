@@ -1085,6 +1085,7 @@ export const dict = {
   "settings.providers.description": "A szolgáltató beállításai itt konfigurálhatók.",
   "settings.providers.section.connected": "Csatlakozott szolgáltatók",
   "settings.providers.connected.empty": "Nincsenek csatlakoztatott szolgáltatók",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "A környezeti változókból csatlakozik",
   "settings.providers.section.popular": "Népszerű szolgáltatók",
   "settings.providers.custom.description": "Adjon hozzá egy OpenAI-kompatibilis szolgáltatót az alap URL segítségével.",

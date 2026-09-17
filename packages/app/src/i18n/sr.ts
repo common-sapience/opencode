@@ -1078,6 +1078,7 @@ export const dict = {
   "settings.providers.description": "Овде ће се моћи конфигурисати подешавања добављача.",
   "settings.providers.section.connected": "Повезани провајдери",
   "settings.providers.connected.empty": "Нема повезаних добављача",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Повезано из променљивих окружења",
   "settings.providers.section.popular": "Популарни провајдери",
   "settings.providers.custom.description": "Додајте добављача компатибилног са OpenAI по бази URL.",

@@ -1076,6 +1076,7 @@ export const dict = {
   "settings.providers.description": "Nastavenia poskytovateľov budú konfigurovateľné tu.",
   "settings.providers.section.connected": "Pripojení poskytovatelia",
   "settings.providers.connected.empty": "Žiadni pripojení poskytovatelia",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Pripojené z vašich premenných prostredia",
   "settings.providers.section.popular": "Populárni poskytovatelia",
   "settings.providers.custom.description": "Pridajte poskytovateľa kompatibilného s OpenAI pomocou základnej URL.",

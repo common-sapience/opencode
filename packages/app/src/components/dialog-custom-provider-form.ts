@@ -46,11 +46,6 @@ type ValidateArgs = {
   t: Translator
   disabledProviders: string[]
   existingProviderIDs: Set<string>
-  // Editing a provider another configuration layer already defines (the product's gateway): its id
-  // is expected to exist, and its address is never written back so the shipped value stays the
-  // only one. Models merge additively across configuration layers, so the ids are also written as
-  // the whitelist: that is what makes a removed model disappear.
-  existing?: boolean
 }
 
 export function validateCustomProvider(input: ValidateArgs) {
@@ -78,7 +73,7 @@ export function validateCustomProvider(input: ValidateArgs) {
   const disabled = input.disabledProviders.includes(providerID)
   const existsError = idError
     ? undefined
-    : input.existingProviderIDs.has(providerID) && !disabled && !input.existing
+    : input.existingProviderIDs.has(providerID) && !disabled
       ? input.t("provider.custom.error.providerID.exists")
       : undefined
 
@@ -146,11 +141,10 @@ export function validateCustomProvider(input: ValidateArgs) {
         name,
         ...(env ? { env: [env] } : {}),
         options: {
-          ...(input.existing ? {} : { baseURL }),
+          baseURL,
           ...(Object.keys(headerConfig).length ? { headers: headerConfig } : {}),
         },
         models: modelConfig,
-        ...(input.existing ? { whitelist: Object.keys(modelConfig) } : {}),
       },
     },
   }

@@ -1085,6 +1085,7 @@ export const dict = {
   "settings.providers.description": "Үйлчилгээ үзүүлэгчийн тохиргоог энд хийх боломжтой.",
   "settings.providers.section.connected": "Холбогдсон үйлчилгээ үзүүлэгчид",
   "settings.providers.connected.empty": "Холбогдсон үйлчилгээ үзүүлэгч байхгүй байна",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Таны орчны хувьсагчдаас холбогдсон",
   "settings.providers.section.popular": "Алдартай үйлчилгээ үзүүлэгчид",
   "settings.providers.custom.description": "OpenAI нийцтэй үйлчилгээ үзүүлэгчийг URL үндсэн дээр нэмнэ үү.",

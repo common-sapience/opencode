@@ -1040,6 +1040,7 @@ export const dict = {
   "settings.providers.description": "提供者設定將在此處可設定。",
   "settings.providers.section.connected": "已連線的提供者",
   "settings.providers.connected.empty": "沒有已連線的提供者",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.section.popular": "熱門提供者",
   "settings.providers.tag.environment": "環境",
   "settings.providers.tag.config": "設定",

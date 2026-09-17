@@ -1088,6 +1088,7 @@ export const dict = {
   "settings.providers.description": "Teikėjo nustatymus bus galima konfigūruoti čia.",
   "settings.providers.section.connected": "Prisijungę teikėjai",
   "settings.providers.connected.empty": "Nėra prisijungusių teikėjų",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Prisijungta iš jūsų aplinkos kintamųjų",
   "settings.providers.section.popular": "Populiarūs tiekėjai",
   "settings.providers.custom.description": "Pridėkite su OpenAI suderinamą tiekėją pagal bazinį URL.",

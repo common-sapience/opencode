@@ -48,30 +48,26 @@ a user's config file. `baseURL` is the one fact this file fixes; `streaming: fal
 is told the gateway answers only complete responses (one completion is requested and replayed as a
 stream). Nothing about the user is here.
 
-The key and the models are the user's, entered once in the client's provider settings:
+The key is the user's, entered once in the client's provider settings and stored by the engine's
+auth store (`auth.json`, `type: "api"`); `Provider` fills `options.apiKey` from it. The models are
+the gateway's: with a key present the engine lists them from the gateway's own `GET /models`
+(OpenAI-compatible shape, `src/provider/gateway.ts`), limits included, so the catalog is never
+written down here or in a user's file. A model a configuration layer also names keeps the
+configured values. The user picks the model in the session, as with any provider.
 
-| What    | Where the client writes it                               | Read by                                          |
-| ------- | -------------------------------------------------------- | ------------------------------------------------ |
-| API key | the engine's auth store (`auth.json`, `type: "api"`)     | `Provider` fills `options.apiKey` from it        |
-| models  | `provider.platform.models` in the user's own config file | merged onto this file's definition of `platform` |
-
-Two definitions of the same provider merge, so the user's models land on the shipped address. The
-openai-compatible adapter has no catalog to look an unknown model id up in, so a model that is not in
-`models` is not selectable; the client's form is where the list is kept. The client also writes
-`whitelist` with the same ids, because configuration merges add and never remove: the whitelist is
-what makes a model the user deleted disappear.
-
-Fail closed, not fail quiet. Until both the key and at least one model are there the gateway is not
-offered at all rather than sent to the wire to come back as a 401: `Provider` drops it from the list,
-and the provider HTTP handler shows it to the client from this file (address and name, no models) so
-the client has an entry to configure. A shipped file that lost `baseURL` is refused by name:
+Fail closed, not fail quiet. Until the key is there the gateway is not offered at all rather than
+sent to the wire to come back as a 401: `Provider` drops it from the list, and the provider HTTP
+handler shows it to the client from this file (address and name, no models) so the client has an
+entry to configure. A listing the gateway refuses (a wrong key answers 401) is logged and leaves the
+gateway unoffered the same way; the client reports that the key saved but no model came back. A
+shipped file that lost `baseURL` is refused by name:
 
 ```
 The model gateway is not configured: baseURL is missing from the product configuration.
 ```
 
-`limit` on a model is a guess rather than a fact when the user does not set one — the adapter has no
-catalog to read a context window from.
+A model the listing describes without limits gets conservative defaults rather than a guess about
+that model.
 
 A built bundle is the one case that needs care: the engine locates both this directory and the
 browser package relative to the executable, so `product/` and `node_modules/chrome-devtools-mcp` have

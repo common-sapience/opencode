@@ -1086,6 +1086,7 @@ export const dict = {
   "settings.providers.description": "Cài đặt nhà cung cấp sẽ được cấu hình ở đây.",
   "settings.providers.section.connected": "Nhà cung cấp được kết nối",
   "settings.providers.connected.empty": "Không có nhà cung cấp được kết nối",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Đã kết nối từ các biến môi trường của bạn",
   "settings.providers.section.popular": "Nhà cung cấp phổ biến",
   "settings.providers.custom.description": "Thêm nhà cung cấp tương thích OpenAI bằng URL cơ sở.",

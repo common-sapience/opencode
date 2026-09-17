@@ -1073,6 +1073,7 @@ export const dict = {
   "settings.providers.description": "პროვაიდერის პარამეტრების კონფიგურაცია იქნება აქ.",
   "settings.providers.section.connected": "დაკავშირებული პროვაიდერები",
   "settings.providers.connected.empty": "დაკავშირებული პროვაიდერები არ არის",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "დაკავშირებულია თქვენი გარემოს ცვლადებიდან",
   "settings.providers.section.popular": "პოპულარული პროვაიდერები",
   "settings.providers.custom.description": "დაამატე OpenAI-თავსებადი პროვაიდერი ბაზის მიხედვით: URL.",

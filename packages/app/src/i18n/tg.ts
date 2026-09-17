@@ -1081,6 +1081,7 @@ export const dict = {
   "settings.providers.description": "Танзимоти провайдер дар ин ҷо танзим карда мешавад.",
   "settings.providers.section.connected": "Провайдерҳои пайвастшуда",
   "settings.providers.connected.empty": "Провайдерҳои пайвастшуда нест",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Аз тағирёбандаҳои муҳити шумо пайваст карда шудааст",
   "settings.providers.section.popular": "Провайдерҳои машҳур",
   "settings.providers.custom.description": "Илова кардани провайдери OpenAI-мувофиқ аз рӯи асос URL.",

@@ -1086,6 +1086,7 @@ export const dict = {
   "settings.providers.description": "Provayder tənzimləmələri burada konfiqurasiya edilə biləcək.",
   "settings.providers.section.connected": "Qoşulmuş provayderlər",
   "settings.providers.connected.empty": "Qoşulmuş provayder yoxdur",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Mühit dəyişənlərinizdən qoşulub",
   "settings.providers.section.popular": "Populyar provayderlər",
   "settings.providers.custom.description": "Əsas URL ilə OpenAI-uyğun provayder əlavə edin.",

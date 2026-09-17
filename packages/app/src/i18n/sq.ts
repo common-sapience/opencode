@@ -1080,6 +1080,7 @@ export const dict = {
   "settings.providers.description": "Cilësimet e ofruesit do të konfigurohen këtu.",
   "settings.providers.section.connected": "Ofruesit e lidhur",
   "settings.providers.connected.empty": "Nuk ka ofrues të lidhur",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Lidhur nga variablat e mjedisit tuaj",
   "settings.providers.section.popular": "Ofruesit e njohur",
   "settings.providers.custom.description": "Shtoni një ofrues të pajtueshëm me OpenAI nga baza URL.",

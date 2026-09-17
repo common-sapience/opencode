@@ -983,6 +983,7 @@ export const dict = {
   "settings.providers.description": "プロバイダー設定は今後ここで構成できるようになります。",
   "settings.providers.section.connected": "接続済みプロバイダー",
   "settings.providers.connected.empty": "接続済みプロバイダーはありません",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.section.popular": "人気のプロバイダー",
   "settings.providers.tag.environment": "環境",
   "settings.providers.tag.config": "設定",

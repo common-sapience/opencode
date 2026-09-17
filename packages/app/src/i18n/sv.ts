@@ -1078,6 +1078,7 @@ export const dict = {
   "settings.providers.description": "Leverantörsinställningar kommer att kunna konfigureras här.",
   "settings.providers.section.connected": "Anslutna leverantörer",
   "settings.providers.connected.empty": "Inga anslutna leverantörer",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Anslutna via dina miljövariabler",
   "settings.providers.section.popular": "Populära leverantörer",
   "settings.providers.custom.description": "Lägg till en OpenAI-kompatibel leverantör genom bas-URL.",

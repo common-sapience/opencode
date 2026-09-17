@@ -708,6 +708,7 @@ export const dict = {
   "settings.providers.description": "공급자 설정은 여기서 구성할 수 있습니다.",
   "settings.providers.section.connected": "연결된 공급자",
   "settings.providers.connected.empty": "연결된 공급자 없음",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.section.popular": "인기 공급자",
   "settings.providers.tag.environment": "환경",
   "settings.providers.tag.config": "구성",

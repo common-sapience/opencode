@@ -1095,6 +1095,7 @@ export const dict: Record<string, string> = {
   "settings.providers.description": "བྱིན་མི་སྒྲིག་སྟངས་ཚུ་ ནཱ་ལུ་རིམ་སྒྲིག་འབད་བཏུབ།",
   "settings.providers.section.connected": "མཐུད་ཡོད་པའི་བྱིན་མི་ཚུ།",
   "settings.providers.connected.empty": "མཐུད་ཡོད་པའི་བྱིན་མི་མེད།",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "ཁྱོད་ཀྱི་མཐའ་འཁོར་འགྱུར་ཅན་ཚུ་ལས་མཐུད་ཡོདཔ།",
   "settings.providers.section.popular": "ཡོངས་གྲགས་ཅན་གྱི་བྱིན་མི་ཚུ།",
   "settings.providers.custom.description": "གཞི་རྟེན་ URLགིས་ OpenAI-མཐུན་འགྱུར་བྱིན་མི་ཅིག་ཁ་སྐོང་བརྐྱབ།",

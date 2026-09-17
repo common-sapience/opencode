@@ -70,14 +70,6 @@ const withEnv = <A, E, R>(vars: Record<string, string | undefined>, self: Effect
 // What the client writes when the user configures the gateway: the key into the auth store, the
 // models into the user's configuration. The address is never written; it stays in the shipped file.
 const storedKey = JSON.stringify({ [Product.GATEWAY_PROVIDER]: { type: "api", key: API_KEY } })
-const userModels = JSON.stringify({
-  provider: {
-    [Product.GATEWAY_PROVIDER]: {
-      models: { [MODEL_ID]: { name: MODEL_ID } },
-    },
-  },
-})
-
 const failure = <A, E, R>(self: Effect.Effect<A, E, R>) =>
   Effect.gen(function* () {
     const exit = yield* Effect.exit(self)
@@ -111,38 +103,107 @@ it.instance("the shipped configuration carries the gateway's address and nothing
   ),
 )
 
-it.instance("a stored key and a model in the user's configuration make the gateway available", () =>
-  withEnv(
-    { OPENCODE_AUTH_CONTENT: storedKey, OPENCODE_CONFIG_CONTENT: userModels },
-    Effect.gen(function* () {
-      const providers = yield* Provider.use.list()
-      expect(Object.keys(providers)).toEqual([Product.GATEWAY_PROVIDER])
-      const provider = providers[GATEWAY]
-      expect(provider.options["baseURL"]).toBe(BASE_URL)
-      expect(provider.options["streaming"]).toBe(false)
-      expect(provider.key).toBe(API_KEY)
-      expect(Object.keys(provider.models)).toEqual([MODEL_ID])
-    }),
+// A gateway for the tests to talk to: `GET /models` in the OpenAI-compatible shape, answering only
+// to the stored key. Its address replaces the shipped one through the user's configuration layer.
+const listing = {
+  data: [
+    {
+      id: "platform-model-1",
+      name: "Model One",
+      context_length: 200000,
+      top_provider: { max_completion_tokens: 16000 },
+    },
+    { id: "platform-model-2", supported_parameters: ["tools", "reasoning"] },
+  ],
+}
+const withGateway = <A, E, R>(
+  handler: (request: Request) => Response,
+  run: (baseURL: string) => Effect.Effect<A, E, R>,
+) =>
+  Effect.acquireUseRelease(
+    Effect.sync(() => Bun.serve({ port: 0, fetch: handler })),
+    (server) => run(`http://127.0.0.1:${server.port}/v1`),
+    (server) => Effect.sync(() => void server.stop(true)),
+  )
+const answering = (request: Request) => {
+  if (new URL(request.url).pathname !== "/v1/models") return new Response("not found", { status: 404 })
+  if (request.headers.get("authorization") !== `Bearer ${API_KEY}`) return new Response("no", { status: 401 })
+  return Response.json(listing)
+}
+const userAddress = (baseURL: string, extra: Record<string, unknown> = {}) =>
+  JSON.stringify({ provider: { [Product.GATEWAY_PROVIDER]: { options: { baseURL }, ...extra } } })
+
+it.instance("a stored key: the models are listed from the gateway, limits included", () =>
+  withGateway(answering, (baseURL) =>
+    withEnv(
+      { OPENCODE_AUTH_CONTENT: storedKey, OPENCODE_CONFIG_CONTENT: userAddress(baseURL) },
+      Effect.gen(function* () {
+        const providers = yield* Provider.use.list()
+        expect(Object.keys(providers)).toEqual([Product.GATEWAY_PROVIDER])
+        const provider = providers[GATEWAY]
+        expect(provider.options["streaming"]).toBe(false)
+        expect(provider.key).toBe(API_KEY)
+        expect(Object.keys(provider.models).sort()).toEqual(["platform-model-1", "platform-model-2"])
+        const one = provider.models["platform-model-1"]
+        expect(one.name).toBe("Model One")
+        expect(one.limit).toEqual({ context: 200000, output: 16000 })
+        expect(one.api.npm).toBe("@ai-sdk/openai-compatible")
+        const two = provider.models["platform-model-2"]
+        expect(two.name).toBe("platform-model-2")
+        expect(two.capabilities.reasoning).toBe(true)
+        expect(two.capabilities.toolcall).toBe(true)
+      }),
+    ),
   ),
 )
 
-it.instance("a model without a key: the gateway is not offered", () =>
-  withEnv(
-    { OPENCODE_CONFIG_CONTENT: userModels },
-    Effect.gen(function* () {
-      const providers = yield* Provider.use.list()
-      expect(Object.keys(providers)).toEqual([])
-    }),
+it.instance("a model the user's configuration also names keeps the configured values", () =>
+  withGateway(answering, (baseURL) =>
+    withEnv(
+      {
+        OPENCODE_AUTH_CONTENT: storedKey,
+        OPENCODE_CONFIG_CONTENT: userAddress(baseURL, {
+          models: { "platform-model-1": { name: "Mine", limit: { context: 1000, output: 100 } } },
+        }),
+      },
+      Effect.gen(function* () {
+        const provider = (yield* Provider.use.list())[GATEWAY]
+        expect(provider.models["platform-model-1"].name).toBe("Mine")
+        expect(provider.models["platform-model-1"].limit.context).toBe(1000)
+        expect(provider.models["platform-model-2"]).toBeDefined()
+      }),
+    ),
   ),
 )
 
-it.instance("a key without a model: the gateway is not offered", () =>
-  withEnv(
-    { OPENCODE_AUTH_CONTENT: storedKey },
-    Effect.gen(function* () {
-      const providers = yield* Provider.use.list()
-      expect(Object.keys(providers)).toEqual([])
-    }),
+it.instance("a wrong key: the gateway answers 401 to the listing and is not offered, without failing", () =>
+  withGateway(answering, (baseURL) =>
+    withEnv(
+      {
+        OPENCODE_AUTH_CONTENT: JSON.stringify({ [Product.GATEWAY_PROVIDER]: { type: "api", key: "wrong" } }),
+        OPENCODE_CONFIG_CONTENT: userAddress(baseURL),
+      },
+      Effect.gen(function* () {
+        const providers = yield* Provider.use.list()
+        expect(Object.keys(providers)).toEqual([])
+      }),
+    ),
+  ),
+)
+
+it.instance("no key: the gateway is not asked and not offered", () =>
+  withGateway(
+    () => {
+      throw new Error("the gateway must not be called without a key")
+    },
+    (baseURL) =>
+      withEnv(
+        { OPENCODE_CONFIG_CONTENT: userAddress(baseURL) },
+        Effect.gen(function* () {
+          const providers = yield* Provider.use.list()
+          expect(Object.keys(providers)).toEqual([])
+        }),
+      ),
   ),
 )
 

@@ -1092,6 +1092,7 @@ export const dict = {
   "settings.providers.description": "ޕްރޮވައިޑަރ ސެޓިންގސް މިތަނުގައި ކޮންފިގްރޭޓް ކުރެވޭނެއެވެ.",
   "settings.providers.section.connected": "ގުޅިފައިވާ ޕްރޮވައިޑަރުންނެވެ",
   "settings.providers.connected.empty": "ގުޅިފައިވާ ޕްރޮވައިޑަރުންތަކެއް ނެތެވެ",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "ތިބާގެ މާހައުލުގެ ވެރިއޭބަލްތަކުން ގުޅިފައިވެއެވެ",
   "settings.providers.section.popular": "މަޝްހޫރު ޕްރޮވައިޑަރުންނެވެ",
   "settings.providers.custom.description": "ބޭސް URL އިން OpenAI އާއި އެއްގޮތްވާ ޕްރޮވައިޑަރެއް އިތުރުކުރުން.",

@@ -4,6 +4,7 @@ import { ConfigV1 } from "@opencode-ai/core/v1/config/config"
 import fuzzysort from "fuzzysort"
 import { Config } from "@/config/config"
 import { Product } from "@/config/product"
+import { Gateway } from "./gateway"
 import { mapValues, mergeDeep, omit, pickBy, sortBy } from "remeda"
 import { NoSuchModelError, type Provider as SDK } from "ai"
 import { Npm } from "@opencode-ai/core/npm"
@@ -866,9 +867,32 @@ const layer = Layer.effect(
 
         // The gateway's key is the user's, stored by the client through the auth store. Without one
         // the provider is not offered at all: it would only answer 401, and its absence from the list
-        // is what tells the client to ask for the key.
-        if (providers[gateway] && !providers[gateway].key && providers[gateway].options["apiKey"] === undefined) {
+        // is what tells the client to ask for the key. With one, the models come from the gateway
+        // itself (T-02): a model the configuration also names keeps the configured values.
+        const gatewayKey = providers[gateway]?.key ?? providers[gateway]?.options["apiKey"]
+        if (providers[gateway] && typeof gatewayKey !== "string") {
           delete providers[gateway]
+        } else if (providers[gateway]) {
+          const info = providers[gateway]
+          const baseURL = String(info.options["baseURL"] ?? "")
+          const discovered = yield* Effect.tryPromise(() => Gateway.discover(baseURL, gatewayKey as string)).pipe(
+            Effect.tapError((error) =>
+              Effect.logWarning("the model gateway's models could not be listed", { error: String(error) }),
+            ),
+            Effect.orElseSucceed((): Record<string, ModelsDev.Model> => ({})),
+          )
+          const catalog: ModelsDev.Provider = {
+            id: gateway,
+            name: info.name,
+            env: [],
+            npm: "@ai-sdk/openai-compatible",
+            api: baseURL,
+            models: {},
+          }
+          for (const [modelID, model] of Object.entries(discovered)) {
+            if (info.models[modelID]) continue
+            info.models[modelID] = fromModelsDevModel(catalog, model)
+          }
         }
 
         for (const [id, provider] of Object.entries(providers)) {

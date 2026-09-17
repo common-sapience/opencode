@@ -1089,6 +1089,7 @@ export const dict = {
   "settings.providers.description": "La configuració del proveïdor es podrà configurar aquí.",
   "settings.providers.section.connected": "Proveïdors connectats",
   "settings.providers.connected.empty": "No hi ha proveïdors connectats",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Connectat des de les vostres variables d'entorn",
   "settings.providers.section.popular": "Proveïdors populars",
   "settings.providers.custom.description": "Afegiu un proveïdor compatible amb OpenAI per base URL.",
