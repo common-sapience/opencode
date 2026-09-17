@@ -517,9 +517,15 @@ export const LocalWorkspace = (props: {
     ),
   )
   const archived = createMemo(() => archivedLoad.data ?? [])
+  // Both lists are refetched after either action: the index only follows the events it is fed.
+  const refetch = () => Promise.all([indexLoad.refetch(), archivedLoad.refetch()])
+  const archive = async (session: Session) => {
+    await props.ctx.archiveSession(session)
+    await refetch()
+  }
   const unarchive = async (session: Session) => {
     await props.ctx.unarchiveSession(session)
-    await Promise.all([indexLoad.refetch(), archivedLoad.refetch()])
+    await refetch()
   }
   const loading = () => indexLoad.isLoading && sessions().length === 0
 
@@ -536,6 +542,7 @@ export const LocalWorkspace = (props: {
         loading={loading}
         sessions={sessions}
         archived={archived}
+        archive={archive}
         unarchive={unarchive}
         hasMore={() => false}
         loadMore={async () => {}}
@@ -572,6 +579,7 @@ const AgentSessionList = (props: {
   loading: Accessor<boolean>
   sessions: Accessor<Session[]>
   archived: Accessor<Session[]>
+  archive: (session: Session) => Promise<void>
   unarchive: (session: Session) => Promise<void>
   hasMore: Accessor<boolean>
   loadMore: () => Promise<void>
@@ -660,7 +668,7 @@ const AgentSessionList = (props: {
                         sidebarExpanded={props.ctx.sidebarExpanded}
                         clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
                         prefetchSession={props.ctx.prefetchSession}
-                        archiveSession={props.ctx.archiveSession}
+                        archiveSession={props.archive}
                       />
                     )}
                   </For>
