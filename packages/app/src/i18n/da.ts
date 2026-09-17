@@ -693,6 +693,7 @@ export const dict = {
   "session.new.lastModified": "Sidst ændret",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
+  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
 
   "session.header.search.placeholder": "Søg {{project}}",

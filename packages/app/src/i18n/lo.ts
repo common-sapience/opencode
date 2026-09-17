@@ -766,6 +766,7 @@ export const dict = {
   "session.new.lastModified": "ດັດແກ້ຫຼ້າສຸດ",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
+  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "ຄົ້ນຫາ {{project}}",
   "session.header.searchFiles": "ຊອກຫາໄຟລ໌",

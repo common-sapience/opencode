@@ -516,6 +516,7 @@ export const dict = {
   "session.new.lastModified": "최근 수정",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
+  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "{{project}} 검색",
   "session.header.searchFiles": "파일 검색",

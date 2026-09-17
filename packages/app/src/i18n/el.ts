@@ -777,6 +777,7 @@ export const dict = {
   "session.new.lastModified": "Τελευταία τροποποίηση",
   "session.new.directory": "Working directory",
   "session.new.agent": "Agent",
+  "session.new.agent.choose": "Choose agent",
   "session.new.directory.choose": "Choose folder",
   "session.header.search.placeholder": "Αναζήτηση {{project}}",
   "session.header.searchFiles": "Αναζήτηση αρχείων",
