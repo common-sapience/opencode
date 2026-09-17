@@ -70,17 +70,17 @@ export function NewSessionView(_props: NewSessionViewProps) {
       <div class="flex-1 px-6 pb-30 flex items-center justify-center text-center">
         <div class="flex flex-col items-center gap-6">
           <div class="text-20-medium text-text-strong">{language.t("session.new.title")}</div>
-          <div class="flex flex-col items-center gap-1" data-component="session-setup">
+          <div class="grid grid-cols-[auto_auto_auto] items-center gap-x-3 gap-y-1" data-component="session-setup">
+            <span class="text-12-medium text-text-weak text-right">{language.t("session.new.agent")}</span>
+            <span
+              class="text-13-medium text-text-strong text-left truncate max-w-[220px]"
+              data-component="session-agent"
+            >
+              {agentLabel(currentAgent())}
+            </span>
             <DropdownMenu>
-              <DropdownMenu.Trigger
-                as={Button}
-                variant="ghost"
-                size="small"
-                class="capitalize max-w-[240px]"
-                data-action="session-agent"
-              >
-                <span class="truncate">{agentLabel(currentAgent())}</span>
-                <Icon name="chevron-down" size="small" class="text-icon-weak shrink-0" />
+              <DropdownMenu.Trigger as={Button} variant="ghost" size="small" data-action="session-agent-choose">
+                {language.t("session.new.agent.choose")}
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
                 <DropdownMenu.Content class="mt-1 min-w-[180px]">
@@ -101,16 +101,15 @@ export function NewSessionView(_props: NewSessionViewProps) {
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu>
-            <Button
-              variant="ghost"
-              size="small"
-              class="max-w-[240px]"
-              data-action="session-directory-choose"
-              onClick={choose}
+            <span class="text-12-medium text-text-weak text-right">{language.t("session.new.directory")}</span>
+            <span
+              class="text-13-medium text-text-strong text-left truncate max-w-[220px] select-text"
+              data-component="session-directory"
             >
-              <span class="truncate" data-component="session-directory">
-                {shown() || language.t("session.new.directory.choose")}
-              </span>
+              {shown()}
+            </span>
+            <Button variant="ghost" size="small" data-action="session-directory-choose" onClick={choose}>
+              {language.t("session.new.directory.choose")}
             </Button>
           </div>
         </div>
