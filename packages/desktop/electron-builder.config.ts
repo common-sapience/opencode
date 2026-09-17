@@ -21,6 +21,8 @@ const metainfoFpm = (appId: string) =>
 async function signWindows(configuration: { path: string }) {
   if (process.platform !== "win32") return
   if (process.env.GITHUB_ACTIONS !== "true") return
+  // Signing needs the trusted-signing account; a build without it ships unsigned rather than failing.
+  if (!process.env.AZURE_TRUSTED_SIGNING_ENDPOINT) return
 
   await execFileAsync(
     "pwsh",
@@ -88,11 +90,12 @@ const getBase = (appId: string): Configuration => ({
     gatekeeperAssess: false,
     entitlements: "resources/entitlements.plist",
     entitlementsInherit: "resources/entitlements.plist",
-    notarize: true,
+    // Notarization and dmg signing need Apple credentials; without them the build is unsigned.
+    notarize: !!process.env.APPLE_API_KEY_ID,
     target: ["dmg", "zip"],
   },
   dmg: {
-    sign: true,
+    sign: !!process.env.APPLE_API_KEY_ID,
   },
   protocols: {
     name: "OpenCode",

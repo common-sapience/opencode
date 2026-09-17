@@ -1,0 +1,87 @@
+name: desktop-release
+
+# Builds the Common Sapience desktop installers on the three platforms and attaches them to a
+# GitHub release. Run by hand; signing happens only when the platform's credentials are set.
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Release channel"
+        type: choice
+        default: prod
+        options: [dev, beta, prod]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: macos-15-intel
+            name: mac-x64
+            flags: --mac --x64
+            install_flags: --os=darwin --cpu=x64
+          - host: macos-15
+            name: mac-arm64
+            flags: --mac --arm64
+            install_flags: --os=darwin --cpu=arm64
+          - host: windows-2025
+            name: win-x64
+            flags: --win --x64
+          - host: ubuntu-24.04
+            name: linux-x64
+            flags: --linux AppImage deb --x64
+    runs-on: ${{ matrix.settings.host }}
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - uses: ./.github/actions/setup-bun
+        with:
+          install-flags: ${{ matrix.settings.install_flags }}
+
+      - name: Build
+        run: bun run build
+        working-directory: packages/desktop
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          OPENCODE_CHANNEL: ${{ inputs.channel }}
+
+      - name: Package
+        run: npx electron-builder ${{ matrix.settings.flags }} --publish never --config electron-builder.config.ts
+        working-directory: packages/desktop
+        timeout-minutes: 60
+        env:
+          OPENCODE_CHANNEL: ${{ inputs.channel }}
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: common-sapience-${{ matrix.settings.name }}
+          path: |
+            packages/desktop/dist/common-sapience-*
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          path: installers
+          merge-multiple: true
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p "require('./packages/desktop/package.json').version")
+          tag="desktop-v${version}-${GITHUB_SHA::7}"
+          gh release create "$tag" installers/* \
+            --target "$GITHUB_SHA" \
+            --title "Common Sapience desktop ${version} (${GITHUB_SHA::7})" \
+            --notes "Desktop installers built from ${GITHUB_SHA} on channel ${{ inputs.channel }}. macOS and Windows builds are unsigned unless signing credentials were configured."
