@@ -89,3 +89,17 @@ for (const channel of ["beta", "prod"] as const) {
     })
   })
 }
+
+test("ships the product configuration and the browser MCP server beside the executable", async () => {
+  const module = await import("./electron-builder.config.ts?product-files")
+  const config = module.default as Configuration
+  expect(config.extraFiles).toContainEqual({
+    from: expect.stringMatching(/packages\/opencode\/product$/),
+    to: "product",
+  })
+  expect(config.extraFiles).toContainEqual({
+    from: expect.stringMatching(/node_modules\/chrome-devtools-mcp$/),
+    to: "node_modules/chrome-devtools-mcp",
+  })
+  expect(config.artifactName).toBe("common-sapience-${os}-${arch}.${ext}")
+})

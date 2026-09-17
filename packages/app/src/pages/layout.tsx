@@ -149,7 +149,7 @@ export default function LegacyLayout(props: ParentProps) {
     sizing: false,
     peek: undefined as string | undefined,
     peeked: false,
-    debugTools: true,
+    debugTools: false,
   })
 
   const updateVersion = () => {

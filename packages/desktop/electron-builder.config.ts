@@ -41,8 +41,17 @@ const APP_IDS = {
   prod: "ai.opencode.desktop",
 } as const
 
+// The engine finds its managed configuration and the browser MCP server next to the executable
+// (packages/opencode/product/README.md), so both ship as plain files beside it, outside the archive.
+const productDir = path.join(rootDir, "packages", "opencode", "product")
+const browserMcpDir = path.join(rootDir, "packages", "opencode", "node_modules", "chrome-devtools-mcp")
+
 const getBase = (appId: string): Configuration => ({
-  artifactName: "opencode-desktop-${os}-${arch}.${ext}",
+  artifactName: "common-sapience-${os}-${arch}.${ext}",
+  extraFiles: [
+    { from: productDir, to: "product" },
+    { from: browserMcpDir, to: "node_modules/chrome-devtools-mcp" },
+  ],
   directories: {
     output: "dist",
     buildResources: "resources",
@@ -106,6 +115,7 @@ const getBase = (appId: string): Configuration => ({
   linux: {
     icon: `resources/icons`,
     category: "Development",
+    maintainer: "Common Sapience",
     executableName: appId,
     desktop: {
       entry: {
