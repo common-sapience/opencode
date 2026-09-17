@@ -17,7 +17,8 @@ import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
 import { usePlatform } from "@/context/platform"
 import { useServer } from "@/context/server"
-import { useSettings, productSidebarLayout } from "@/context/settings"
+import { useSettings } from "@/context/settings"
+import { useServerSync } from "@/context/server-sync"
 import { useSync } from "@/context/sync"
 import { useTerminal } from "@/context/terminal"
 import { focusTerminalById } from "@/pages/session/helpers"
@@ -145,6 +146,7 @@ export function SessionHeader() {
   const language = useLanguage()
   const settings = useSettings()
   const sync = useSync()
+  const serverSync = useServerSync()
   const terminal = useTerminal()
   const { params, view } = useSessionLayout()
 
@@ -334,8 +336,8 @@ export function SessionHeader() {
               when={isV2()}
               fallback={
                 <div class="flex items-center gap-2">
-                  {/* The directory chip names a project; with one fixed directory (D-04) it says nothing. */}
-                  <Show when={!productSidebarLayout && projectDirectory()}>
+                  {/* The directory chip names where this session works; the home directory is the default and needs no chip (UI-08). */}
+                  <Show when={projectDirectory() && projectDirectory() !== serverSync().data.path.home}>
                     <div class="hidden xl:flex items-center">
                       <Show
                         when={canOpen()}
