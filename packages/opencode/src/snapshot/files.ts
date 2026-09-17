@@ -145,15 +145,18 @@ export function make(input: Input) {
     }
   })
 
+  // A patch names the files written after its checkpoint, across every later checkpoint (a step
+  // records into whichever checkpoint is current when it writes), so reverting it restores each
+  // named file to its earliest record from that checkpoint on -- the same range `patch` listed.
   const revert = Effect.fnUntraced(function* (patches: Patch[]) {
     yield* load()
     const sorted = [...patches].sort((a, b) => (a.hash < b.hash ? 1 : a.hash > b.hash ? -1 : 0))
     for (const item of sorted) {
-      const checkpoint = checkpoints.get(item.hash)
-      if (!checkpoint) continue
+      const list = since(item.hash)
       for (const file of item.files) {
-        if (!checkpoint.files.has(file)) continue
-        yield* apply(file, checkpoint.files.get(file) ?? null)
+        const content = earliest(list, file)
+        if (content === undefined) continue
+        yield* apply(file, content)
       }
     }
   })

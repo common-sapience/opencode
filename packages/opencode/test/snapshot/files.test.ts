@@ -93,6 +93,25 @@ it.instance("ENG-24: revert undoes only the listed files of the listed checkpoin
   }),
 )
 
+it.instance("ENG-24: revert covers files written under later checkpoints of the same patch", () =>
+  Effect.gen(function* () {
+    const t = yield* setup()
+    // A step starts at `first`; its step-finish takes `second`; the next step writes under `second`
+    // while the message's patch still carries `first`.
+    const first = yield* t.snapshot.track()
+    yield* t.snapshot.write(t.a, "a2\n")
+    yield* t.snapshot.track()
+    yield* t.snapshot.write(t.c, "c1\n")
+    yield* t.snapshot.write(t.a, "a3\n")
+    const patch = yield* t.snapshot.patch(first!)
+    expect(patch.files).toEqual(["a.txt", "c.txt"])
+
+    yield* t.snapshot.revert([patch])
+    expect(yield* read(t.a)).toBe("a1\n")
+    expect(yield* read(t.c)).toBeUndefined()
+  }),
+)
+
 it.instance("ENG-24: diffFull reports what changed between two checkpoints with a status per file", () =>
   Effect.gen(function* () {
     const t = yield* setup()
