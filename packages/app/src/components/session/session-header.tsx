@@ -17,7 +17,7 @@ import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
 import { usePlatform } from "@/context/platform"
 import { useServer } from "@/context/server"
-import { useSettings } from "@/context/settings"
+import { useSettings, productSidebarLayout } from "@/context/settings"
 import { useSync } from "@/context/sync"
 import { useTerminal } from "@/context/terminal"
 import { focusTerminalById } from "@/pages/session/helpers"
@@ -323,10 +323,11 @@ export function SessionHeader() {
         {(mount) => (
           <Portal mount={mount}>
             <Show
-              when={isV2}
+              when={isV2()}
               fallback={
                 <div class="flex items-center gap-2">
-                  <Show when={projectDirectory()}>
+                  {/* The directory chip names a project; with one fixed directory (D-04) it says nothing. */}
+                  <Show when={!productSidebarLayout && projectDirectory()}>
                     <div class="hidden xl:flex items-center">
                       <Show
                         when={canOpen()}
