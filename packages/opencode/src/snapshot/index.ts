@@ -10,6 +10,7 @@ import { Hash } from "@opencode-ai/core/util/hash"
 import { Config } from "@/config/config"
 import { Global } from "@opencode-ai/core/global"
 import { Info } from "@opencode-ai/schema/file-diff"
+import { SnapshotFiles } from "./files"
 
 export const Patch = Schema.Struct({
   hash: Schema.String,
@@ -42,6 +43,10 @@ export interface Interface {
   readonly revert: (patches: Patch[]) => Effect.Effect<void>
   readonly diff: (hash: string) => Effect.Effect<string>
   readonly diffFull: (from: string, to: string) => Effect.Effect<FileDiff[]>
+  // The engine's one file write path: every tool that writes or deletes a file goes through these
+  // so the change is recorded before it happens (ENG-24).
+  readonly write: (file: string, content: string | Uint8Array) => Effect.Effect<void, Error>
+  readonly remove: (file: string) => Effect.Effect<void, Error>
 }
 
 export class Service extends Context.Service<Service, Interface>()("@opencode/Snapshot") {}
@@ -65,6 +70,25 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
 
     const state = yield* InstanceState.make<State>(
       Effect.fn("Snapshot.state")(function* (ctx) {
+        const removeFile = (file: string) => fs.remove(file).pipe(Effect.mapError((error) => new Error(String(error))))
+        if ((yield* config.get()).snapshot === "files") {
+          // Records are kept per working directory, not per project: a directory that is not a
+          // repository belongs to the global project, whose worktree is the filesystem root.
+          const files = SnapshotFiles.make({
+            worktree: ctx.directory,
+            store: path.join(Global.Path.data, "checkpoint", ctx.project.id, Hash.fast(ctx.directory)),
+            writeFile: (file, content) => fs.writeWithDirs(file, content),
+            removeFile,
+          })
+          yield* files
+            .cleanup()
+            .pipe(
+              Effect.catchCause((cause) =>
+                Effect.logError("checkpoint cleanup failed", { cause: Cause.pretty(cause) }),
+              ),
+            )
+          return files
+        }
         const state = {
           directory: ctx.directory,
           worktree: ctx.worktree,
@@ -765,7 +789,17 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
           Effect.forkScoped,
         )
 
-        return { cleanup, track, patch, restore, revert, diff, diffFull }
+        return {
+          cleanup,
+          track,
+          patch,
+          restore,
+          revert,
+          diff,
+          diffFull,
+          write: (file: string, content: string | Uint8Array) => fs.writeWithDirs(file, content),
+          remove: removeFile,
+        }
       }),
     )
 
@@ -793,6 +827,12 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
       }),
       diffFull: Effect.fn("Snapshot.diffFull")(function* (from: string, to: string) {
         return yield* InstanceState.useEffect(state, (s) => s.diffFull(from, to))
+      }),
+      write: Effect.fn("Snapshot.write")(function* (file: string, content: string | Uint8Array) {
+        return yield* InstanceState.useEffect(state, (s) => s.write(file, content))
+      }),
+      remove: Effect.fn("Snapshot.remove")(function* (file: string) {
+        return yield* InstanceState.useEffect(state, (s) => s.remove(file))
       }),
     })
   }),

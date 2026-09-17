@@ -1689,6 +1689,7 @@ export type AgentConfig = {
   temperature?: number
   top_p?: number
   prompt?: string
+  inherit_base_prompt?: boolean
   tools?: {
     [key: string]: boolean
   }
@@ -1710,10 +1711,10 @@ export type AgentConfig = {
     | unknown
     | string
     | number
+    | boolean
     | {
         [key: string]: boolean
       }
-    | boolean
     | "subagent"
     | "primary"
     | "all"
@@ -1914,7 +1915,10 @@ export type Config = {
   watcher?: {
     ignore?: Array<string>
   }
-  snapshot?: boolean
+  /**
+   * Snapshot tracking. true records git snapshots of the working directory; "files" records only the files the engine's own tools write, per checkpoint, which costs nothing on large directories; false records nothing and undoing or reverting will not undo/redo file changes. Defaults to true.
+   */
+  snapshot?: boolean | "files"
   plugin?: Array<
     | string
     | [
@@ -2375,6 +2379,7 @@ export type Agent = {
   }
   variant?: string
   prompt?: string
+  inheritBasePrompt?: boolean
   options: {
     [key: string]: unknown
   }

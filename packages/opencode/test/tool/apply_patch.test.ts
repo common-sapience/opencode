@@ -9,6 +9,7 @@ import { LSP } from "@/lsp/lsp"
 import { FSUtil } from "@opencode-ai/core/fs-util"
 import { Format } from "../../src/format"
 import { Agent } from "../../src/agent/agent"
+import { Snapshot } from "../../src/snapshot"
 import { EventV2Bridge } from "../../src/event-v2-bridge"
 import { Truncate } from "@/tool/truncate"
 import { TestInstance } from "../fixture/fixture"
@@ -17,7 +18,7 @@ import { testEffect } from "../lib/effect"
 
 const it = testEffect(
   LayerNode.compile(
-    LayerNode.group([LSP.node, FSUtil.node, Format.node, EventV2Bridge.node, Truncate.node, Agent.node]),
+    LayerNode.group([LSP.node, FSUtil.node, Format.node, EventV2Bridge.node, Truncate.node, Agent.node, Snapshot.node]),
   ),
 )
 

@@ -49,9 +49,9 @@ export const Info = Schema.Struct({
     description: "@deprecated Use 'references' field instead. Named git or local directory references",
   }),
   watcher: Schema.optional(Schema.Struct({ ignore: Schema.optional(Schema.mutable(Schema.Array(Schema.String))) })),
-  snapshot: Schema.optional(Schema.Boolean).annotate({
+  snapshot: Schema.optional(Schema.Union([Schema.Boolean, Schema.Literal("files")])).annotate({
     description:
-      "Enable or disable snapshot tracking. When false, filesystem snapshots are not recorded and undoing or reverting will not undo/redo file changes. Defaults to true.",
+      'Snapshot tracking. true records git snapshots of the working directory; "files" records only the files the engine\'s own tools write, per checkpoint, which costs nothing on large directories; false records nothing and undoing or reverting will not undo/redo file changes. Defaults to true.',
   }),
   plugin: Schema.optional(Schema.mutable(Schema.Array(ConfigPluginV1.Spec))),
   share: Schema.optional(Schema.Literals(["manual", "auto", "disabled"])).annotate({

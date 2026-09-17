@@ -10,6 +10,7 @@ import { assertExternalDirectoryEffect } from "./external-directory"
 import { trimDiff } from "./edit"
 import { LSP } from "@/lsp/lsp"
 import { FSUtil } from "@opencode-ai/core/fs-util"
+import { Snapshot } from "@/snapshot"
 import DESCRIPTION from "./apply_patch.txt"
 import { FileSystem } from "@opencode-ai/core/filesystem"
 import { Format } from "../format"
@@ -24,6 +25,7 @@ export const ApplyPatchTool = Tool.define(
   Effect.gen(function* () {
     const lsp = yield* LSP.Service
     const afs = yield* FSUtil.Service
+    const snapshot = yield* Snapshot.Service
     const format = yield* Format.Service
     const events = yield* EventV2Bridge.Service
 
@@ -223,12 +225,12 @@ export const ApplyPatchTool = Tool.define(
           case "add":
             // Create parent directories (recursive: true is safe on existing/root dirs)
 
-            yield* afs.writeWithDirs(change.filePath, Bom.join(change.newContent, change.bom))
+            yield* snapshot.write(change.filePath, Bom.join(change.newContent, change.bom))
             updates.push({ file: change.filePath, event: "add" })
             break
 
           case "update":
-            yield* afs.writeWithDirs(change.filePath, Bom.join(change.newContent, change.bom))
+            yield* snapshot.write(change.filePath, Bom.join(change.newContent, change.bom))
             updates.push({ file: change.filePath, event: "change" })
             break
 
@@ -236,15 +238,15 @@ export const ApplyPatchTool = Tool.define(
             if (change.movePath) {
               // Create parent directories (recursive: true is safe on existing/root dirs)
 
-              yield* afs.writeWithDirs(change.movePath!, Bom.join(change.newContent, change.bom))
-              yield* afs.remove(change.filePath)
+              yield* snapshot.write(change.movePath!, Bom.join(change.newContent, change.bom))
+              yield* snapshot.remove(change.filePath)
               updates.push({ file: change.filePath, event: "unlink" })
               updates.push({ file: change.movePath, event: "add" })
             }
             break
 
           case "delete":
-            yield* afs.remove(change.filePath)
+            yield* snapshot.remove(change.filePath)
             updates.push({ file: change.filePath, event: "unlink" })
             break
         }

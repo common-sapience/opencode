@@ -11,6 +11,7 @@ import { Format } from "../../src/format"
 import { Truncate } from "@/tool/truncate"
 import { Tool } from "@/tool/tool"
 import { Agent } from "../../src/agent/agent"
+import { Snapshot } from "../../src/snapshot"
 import { SessionID, MessageID } from "../../src/session/schema"
 import { CrossSpawnSpawner } from "@opencode-ai/core/cross-spawn-spawner"
 import { disposeAllInstances, TestInstance } from "../fixture/fixture"
@@ -41,6 +42,7 @@ const it = testEffect(
       CrossSpawnSpawner.node,
       Truncate.node,
       Agent.node,
+      Snapshot.node,
     ]),
   ),
 )

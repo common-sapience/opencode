@@ -194,12 +194,12 @@ it.instance("ENG-19: the product config registers the memory skill and the dream
   ),
 )
 
-it.instance("ENG-23: the product config turns file snapshots off", () =>
+it.instance("ENG-24: the product config records file-level checkpoints, not directory snapshots", () =>
   withProduct(() =>
     Effect.gen(function* () {
       // Every session works in the home directory (D-04); a git snapshot of it before each
       // message takes tens of seconds and serialises on one index lock.
-      expect((yield* Config.Service.use((svc) => svc.get())).snapshot).toBe(false)
+      expect((yield* Config.Service.use((svc) => svc.get())).snapshot).toBe("files")
     }),
   ),
 )

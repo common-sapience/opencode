@@ -10,6 +10,7 @@ import { FileSystem } from "@opencode-ai/core/filesystem"
 import { Watcher } from "@opencode-ai/core/filesystem/watcher"
 import { Format } from "../format"
 import { FSUtil } from "@opencode-ai/core/fs-util"
+import { Snapshot } from "@/snapshot"
 import { InstanceState } from "@/effect/instance-state"
 import { trimDiff } from "./edit"
 import { assertExternalDirectoryEffect } from "./external-directory"
@@ -29,6 +30,7 @@ export const WriteTool = Tool.define(
   Effect.gen(function* () {
     const lsp = yield* LSP.Service
     const fs = yield* FSUtil.Service
+    const snapshot = yield* Snapshot.Service
     const events = yield* EventV2Bridge.Service
     const format = yield* Format.Service
 
@@ -61,7 +63,7 @@ export const WriteTool = Tool.define(
             },
           })
 
-          yield* fs.writeWithDirs(filepath, Bom.join(contentNew, desiredBom))
+          yield* snapshot.write(filepath, Bom.join(contentNew, desiredBom))
           if (yield* format.file(filepath)) {
             yield* Bom.syncFile(fs, filepath, desiredBom)
           }
