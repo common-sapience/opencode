@@ -1082,6 +1082,7 @@ export const dict = {
   "settings.providers.description": "فراہم کنندہ کی ترتیبات یہاں قابل ترتیب ہوں گی۔",
   "settings.providers.section.connected": "منسلک فراہم کنندگان",
   "settings.providers.connected.empty": "کوئی منسلک فراہم کنندہ نہیں۔",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "آپ کے ماحول کے متغیرات سے جڑا ہوا ہے۔",
   "settings.providers.section.popular": "مقبول فراہم کنندگان",
   "settings.providers.custom.description": "بیس URL کے ذریعے ایک OpenAI-مطابق فراہم کنندہ شامل کریں۔",

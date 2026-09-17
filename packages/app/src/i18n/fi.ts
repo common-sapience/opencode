@@ -975,6 +975,7 @@ export const dict = {
   "settings.providers.description": "Palveluntarjoajan asetukset voidaan määrittää täällä.",
   "settings.providers.section.connected": "Yhdistetyt palveluntarjoajat",
   "settings.providers.connected.empty": "Ei yhdistettyjä palveluntarjoajia",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Yhdistetty ympäristömuuttujien kautta",
   "settings.providers.section.popular": "Suositut palveluntarjoajat",
   "settings.providers.custom.description":

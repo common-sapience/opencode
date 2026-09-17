@@ -1179,6 +1179,7 @@ export const dict = {
   "settings.providers.description": "Налаштування провайдерів будуть доступні тут.",
   "settings.providers.section.connected": "Підключені провайдери",
   "settings.providers.connected.empty": "Немає підключених провайдерів",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Підключено зі змінних середовища",
   "settings.providers.section.popular": "Популярні провайдери",
   "settings.providers.custom.description": "Додайте провайдера, сумісного з OpenAI, за базовим URL.",

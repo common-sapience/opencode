@@ -1089,6 +1089,7 @@ export const dict = {
   "settings.providers.description": "Οι ρυθμίσεις παρόχου θα μπορούν να διαμορφωθούν εδώ.",
   "settings.providers.section.connected": "Συνδεδεμένοι πάροχοι",
   "settings.providers.connected.empty": "Δεν υπάρχουν συνδεδεμένοι πάροχοι",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Συνδέθηκε από τις μεταβλητές περιβάλλοντος",
   "settings.providers.section.popular": "Δημοφιλείς πάροχοι",
   "settings.providers.custom.description": "Προσθήκη παρόχου συμβατού με OpenAI κατά βάση URL.",

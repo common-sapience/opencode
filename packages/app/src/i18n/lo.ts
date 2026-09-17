@@ -1065,6 +1065,7 @@ export const dict = {
   "settings.providers.description": "ການຕັ້ງຄ່າຜູ້ໃຫ້ບໍລິການຈະຖືກຕັ້ງຄ່າໄດ້ທີ່ນີ້.",
   "settings.providers.section.connected": "ຜູ້ໃຫ້ບໍລິການເຊື່ອມຕໍ່",
   "settings.providers.connected.empty": "ບໍ່ມີຜູ້ໃຫ້ບໍລິການເຊື່ອມຕໍ່",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "ເຊື່ອມຕໍ່ຈາກຕົວແປສະພາບແວດລ້ອມຂອງທ່ານ",
   "settings.providers.section.popular": "ຜູ້ໃຫ້ບໍລິການທີ່ນິຍົມ",
   "settings.providers.custom.description": "ເພີ່ມຜູ້ໃຫ້ບໍລິການທີ່ເຂົ້າກັນໄດ້ກັບ OpenAI ໂດຍ URL ພື້ນຖານ.",

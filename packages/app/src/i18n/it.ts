@@ -1000,6 +1000,7 @@ export const dict = {
   "settings.providers.description": "Le impostazioni dei provider saranno configurabili qui.",
   "settings.providers.section.connected": "Provider connessi",
   "settings.providers.connected.empty": "Nessun provider connesso",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Connesso tramite le variabili di ambiente",
   "settings.providers.section.popular": "Provider più diffusi",
   "settings.providers.custom.description": "Aggiungi un provider compatibile con OpenAI tramite l'URL di base.",

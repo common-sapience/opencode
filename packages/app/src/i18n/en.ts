@@ -1063,6 +1063,7 @@ export const dict = {
   "settings.providers.description": "Provider settings will be configurable here.",
   "settings.providers.section.connected": "Connected providers",
   "settings.providers.connected.empty": "No connected providers",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Connected from your environment variables",
   "settings.providers.section.popular": "Popular providers",
   "settings.providers.custom.description": "Add an OpenAI-compatible provider by base URL.",

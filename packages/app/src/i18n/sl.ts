@@ -1080,6 +1080,7 @@ export const dict = {
   "settings.providers.description": "Tukaj je mogoče konfigurirati nastavitve ponudnika.",
   "settings.providers.section.connected": "Povezani ponudniki",
   "settings.providers.connected.empty": "Ni povezanih ponudnikov",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Povezano iz spremenljivk vašega okolja",
   "settings.providers.section.popular": "Priljubljeni ponudniki",
   "settings.providers.custom.description": "Dodajte ponudnika, združljivega z OpenAI, po osnovi URL.",

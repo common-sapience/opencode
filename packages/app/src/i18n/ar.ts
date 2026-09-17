@@ -993,6 +993,7 @@ export const dict = {
   "settings.providers.description": "ستكون إعدادات الموفر قابلة للتكوين هنا.",
   "settings.providers.section.connected": "الموفرون المتصلون",
   "settings.providers.connected.empty": "لا يوجد موفرون متصلون",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.section.popular": "الموفرون الشائعون",
   "settings.providers.tag.environment": "البيئة",
   "settings.providers.tag.config": "التكوين",

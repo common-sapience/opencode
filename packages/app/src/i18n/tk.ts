@@ -1076,6 +1076,7 @@ export const dict = {
   "settings.providers.description": "Üpjün edijiniň sazlamalary bu ýerde düzülip bilner.",
   "settings.providers.section.connected": "Birikdirilen üpjün edijiler",
   "settings.providers.connected.empty": "Baglanan üpjün edijiler ýok",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Daşky gurşaw üýtgeýjilerinden birikdirildi",
   "settings.providers.section.popular": "Meşhur üpjün edijiler",
   "settings.providers.custom.description": "URL esasly OpenAI gabat gelýän üpjün edijini goşuň.",

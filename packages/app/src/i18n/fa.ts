@@ -1072,6 +1072,7 @@ export const dict = {
   "settings.providers.description": "تنظیمات ارائه دهنده در اینجا قابل تنظیم خواهد بود.",
   "settings.providers.section.connected": "ارائه دهندگان متصل",
   "settings.providers.connected.empty": "هیچ ارائه دهنده متصلی وجود ندارد",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "از متغیرهای محیط شما متصل شده است",
   "settings.providers.section.popular": "ارائه دهندگان محبوب",
   "settings.providers.custom.description": "یک ارائه دهنده سازگار با OpenAI توسط پایه URL اضافه کنید.",

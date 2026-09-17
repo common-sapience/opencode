@@ -1074,6 +1074,7 @@ export const dict = {
   "settings.providers.description": "Stillingar þjónustuveitunnar verða stillanlegar hér.",
   "settings.providers.section.connected": "Tengdar veitendur",
   "settings.providers.connected.empty": "Engar tengdar veitendur",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Tengdur frá umhverfisbreytum þínum",
   "settings.providers.section.popular": "Vinsælir veitendur",
   "settings.providers.custom.description": "Bættu við OpenAI-samhæfðum veitanda með grunni URL.",

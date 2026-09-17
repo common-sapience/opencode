@@ -1074,6 +1074,7 @@ export const dict = {
   "settings.providers.description": "Tetapan penyedia boleh dikonfigurasi di sini.",
   "settings.providers.section.connected": "Penyedia yang disambungkan",
   "settings.providers.connected.empty": "Tiada penyedia yang disambungkan",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Disambungkan daripada pembolehubah persekitaran anda",
   "settings.providers.section.popular": "Penyedia popular",
   "settings.providers.custom.description": "Tambah penyedia serasi OpenAI melalui URL asas.",

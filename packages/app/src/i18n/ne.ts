@@ -1074,6 +1074,7 @@ export const dict: Record<string, string> = {
   "settings.providers.description": "प्रदायक सेटिङहरू यहाँ कन्फिगर योग्य हुनेछ।",
   "settings.providers.section.connected": "जडान गरिएका प्रदायकहरू",
   "settings.providers.connected.empty": "जडान गरिएका प्रदायकहरू छैनन्",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "तपाईंको वातावरण चरबाट जडान गरिएको",
   "settings.providers.section.popular": "लोकप्रिय प्रदायकहरू",
   "settings.providers.custom.description": "आधार URL द्वारा एक OpenAI-कम्प्याटिबल प्रदायक थप्नुहोस्।",

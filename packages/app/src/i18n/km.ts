@@ -1068,6 +1068,7 @@ export const dict = {
   "settings.providers.description": "ការកំណត់អ្នកផ្តល់សេវានឹងអាចកំណត់បាននៅទីនេះ។",
   "settings.providers.section.connected": "អ្នកផ្តល់សេវាដែលបានភ្ជាប់",
   "settings.providers.connected.empty": "គ្មានអ្នកផ្តល់សេវាដែលបានតភ្ជាប់ទេ។",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "បានភ្ជាប់ពីអថេរបរិស្ថានរបស់អ្នក។",
   "settings.providers.section.popular": "អ្នកផ្តល់សេវាពេញនិយម",
   "settings.providers.custom.description": "បន្ថែមអ្នកផ្តល់សេវាដែលត្រូវគ្នាជាមួយ OpenAI ដោយ URL មូលដ្ឋាន។",

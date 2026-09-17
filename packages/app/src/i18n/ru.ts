@@ -1075,6 +1075,7 @@ export const dict = {
   "settings.providers.description": "Настройки провайдеров будут доступны здесь.",
   "settings.providers.section.connected": "Подключённые провайдеры",
   "settings.providers.connected.empty": "Нет подключённых провайдеров",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.section.popular": "Популярные провайдеры",
   "settings.providers.tag.environment": "Среда",
   "settings.providers.tag.config": "Конфигурация",

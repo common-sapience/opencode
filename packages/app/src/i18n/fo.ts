@@ -1071,6 +1071,7 @@ export const dict = {
   "settings.providers.description": "Veitarainnstillingar kunnu stillast her.",
   "settings.providers.section.connected": "Sambandsveitarar",
   "settings.providers.connected.empty": "Ongin tilknýttur veitari",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Samband frá tínum umhvørvisbreytum",
   "settings.providers.section.popular": "Vælumtóktir veitarar",
   "settings.providers.custom.description": "Legg ein OpenAI-sambæriligan veitara til eftir grund URL.",

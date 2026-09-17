@@ -1070,6 +1070,7 @@ export const dict: Record<string, string> = {
   "settings.providers.description": "සපයන්නාගේ සිටුවම් මෙහි වින්‍යාස කළ හැක.",
   "settings.providers.section.connected": "සම්බන්ධිත සැපයුම්කරුවන්",
   "settings.providers.connected.empty": "සම්බන්ධිත සපයන්නන් නැත",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "ඔබගේ පරිසර විචල්‍ය වලින් සම්බන්ධ කර ඇත",
   "settings.providers.section.popular": "ජනප්‍රිය සැපයුම්කරුවන්",
   "settings.providers.custom.description": "URL පදනම අනුව OpenAI-අනුකූල සැපයුම්කරුවෙකු එක් කරන්න.",

@@ -1081,6 +1081,7 @@ export const dict = {
   "settings.providers.description": "प्रोवाइडर सेटिंग्स यहां कॉन्फ़िगर करने योग्य होंगी।",
   "settings.providers.section.connected": "कनेक्टेड प्रोवाइडर",
   "settings.providers.connected.empty": "कोई कनेक्टेड प्रोवाइडर नहीं",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "आपके एनवायरनमेंट वेरिएबल से कनेक्ट किया गया",
   "settings.providers.section.popular": "लोकप्रिय प्रोवाइडर",
   "settings.providers.custom.description": "आधार URL द्वारा एक OpenAI-संगत प्रोवाइडर जोड़ें।",

@@ -1081,6 +1081,7 @@ export const dict = {
   "settings.providers.description": "Մատակարարի կարգավորումները կկարգավորվեն այստեղ։",
   "settings.providers.section.connected": "Կապված մատակարարներ",
   "settings.providers.connected.empty": "Կապված մատակարարներ չկան",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Միացված է ձեր միջավայրի փոփոխականներից",
   "settings.providers.section.popular": "Հանրաճանաչ մատակարարներ",
   "settings.providers.custom.description": "Ավելացնել OpenAI-համատեղելի մատակարար ըստ բազային URL։",

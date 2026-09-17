@@ -1080,6 +1080,7 @@ export const dict = {
   "settings.providers.description": "La configuración de proveedores estará disponible aquí.",
   "settings.providers.section.connected": "Proveedores conectados",
   "settings.providers.connected.empty": "No hay proveedores conectados",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.section.popular": "Proveedores populares",
   "settings.providers.tag.environment": "Entorno",
   "settings.providers.tag.config": "Configuración",

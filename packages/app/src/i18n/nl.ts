@@ -1087,6 +1087,7 @@ export const dict = {
   "settings.providers.description": "Aanbiederinstellingen kunnen hier worden geconfigureerd.",
   "settings.providers.section.connected": "Verbonden aanbieders",
   "settings.providers.connected.empty": "Geen verbonden aanbieders",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Verbonden via je omgevingsvariabelen",
   "settings.providers.section.popular": "Populaire aanbieders",
   "settings.providers.custom.description": "Voeg een OpenAI-compatibele aanbieder toe via de basis-URL.",

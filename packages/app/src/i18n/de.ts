@@ -893,6 +893,7 @@ export const dict = {
   "settings.providers.description": "Anbietereinstellungen können hier konfiguriert werden.",
   "settings.providers.section.connected": "Verbundene Anbieter",
   "settings.providers.connected.empty": "Keine verbundenen Anbieter",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.section.popular": "Beliebte Anbieter",
   "settings.providers.tag.environment": "Umgebung",
   "settings.providers.tag.config": "Konfiguration",

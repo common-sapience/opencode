@@ -1079,6 +1079,7 @@ export const dict = {
   "settings.providers.description": "Pakalpojumu iestatījumus varēs konfigurēt šeit.",
   "settings.providers.section.connected": "Pievienotie pakalpojumi",
   "settings.providers.connected.empty": "Nav pievienotu pakalpojumu",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Pievienots no jūsu vides mainīgajiem",
   "settings.providers.section.popular": "Populāri pakalpojumi",
   "settings.providers.custom.description": "Pievienojiet OpenAI saderīgu pakalpojumu, norādot bāzes URL.",

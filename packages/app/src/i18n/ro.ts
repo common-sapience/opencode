@@ -1079,6 +1079,7 @@ export const dict = {
   "settings.providers.description": "Setările furnizorilor vor putea fi configurate aici.",
   "settings.providers.section.connected": "Furnizori conectați",
   "settings.providers.connected.empty": "Niciun furnizor conectat",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Conectat prin variabilele de mediu",
   "settings.providers.section.popular": "Furnizori populari",
   "settings.providers.custom.description": "Adaugă un furnizor compatibil OpenAI prin URL de bază.",

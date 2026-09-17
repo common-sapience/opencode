@@ -1069,6 +1069,7 @@ export const dict: Record<string, string> = {
   "settings.providers.description": "প্রদানকারী সেটিংস এখানে কনফিগারযোগ্য হবে।",
   "settings.providers.section.connected": "সংযুক্ত প্রদানকারী",
   "settings.providers.connected.empty": "কোন সংযুক্ত প্রদানকারী",
+  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "আপনার পরিবেশ ভেরিয়েবল থেকে সংযুক্ত",
   "settings.providers.section.popular": "জনপ্রিয় প্রদানকারী",
   "settings.providers.custom.description": "বেস URL দ্বারা একটি OpenAI-সামঞ্জস্যপূর্ণ প্রদানকারী যোগ করুন।",
