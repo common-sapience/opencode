@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "@solidjs/router"
+import { A, useNavigate, useParams } from "@solidjs/router"
 import { createEffect, createMemo, For, Show, type Accessor, type JSX } from "solid-js"
 import { createStore } from "solid-js/store"
 import { createSortable } from "@thisbeyond/solid-dnd"
@@ -14,13 +14,14 @@ import { IconButtonV2 } from "@opencode-ai/ui/v2/icon-button-v2"
 import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { Spinner } from "@opencode-ai/ui/spinner"
 import { Tooltip } from "@opencode-ai/ui/tooltip"
-import { type Session } from "@opencode-ai/sdk/v2/client"
+import { type Agent, type Session } from "@opencode-ai/sdk/v2/client"
 import { type LocalProject } from "@/context/layout"
 import { useServerSync, useQueryOptions } from "@/context/server-sync"
 import { useLanguage } from "@/context/language"
 import { pathKey } from "@/utils/path-key"
 import { NewSessionItem, SessionItem, SessionSkeleton } from "./sidebar-items"
 import { sortedRootSessions } from "./helpers"
+import { BLANK_AGENT, groupSessionsByAgent, userAgents } from "./sidebar-agents"
 import { useIsFetching } from "@tanstack/solid-query"
 
 type InlineEditorComponent = (props: {
@@ -472,11 +473,11 @@ export const LocalWorkspace = (props: {
       ref={(el) => props.ctx.setScrollContainerRef(el, props.mobile)}
       class="size-full flex flex-col py-2 overflow-y-auto no-scrollbar [overflow-anchor:none]"
     >
-      <WorkspaceSessionList
+      <AgentSessionList
         slug={slug}
         mobile={props.mobile}
         ctx={props.ctx}
-        showNew={() => false}
+        agents={() => workspace().store.agent ?? []}
         loading={loading}
         sessions={sessions}
         hasMore={hasMore}
@@ -484,5 +485,103 @@ export const LocalWorkspace = (props: {
         language={language}
       />
     </div>
+  )
+}
+
+const AgentSessionList = (props: {
+  slug: Accessor<string>
+  mobile?: boolean
+  ctx: WorkspaceSidebarContext
+  agents: Accessor<Agent[]>
+  loading: Accessor<boolean>
+  sessions: Accessor<Session[]>
+  hasMore: Accessor<boolean>
+  loadMore: () => Promise<void>
+  language: ReturnType<typeof useLanguage>
+}): JSX.Element => {
+  const agents = createMemo(() => userAgents(props.agents()))
+  const grouped = createMemo(() => groupSessionsByAgent(agents(), props.sessions()))
+  const label = (agent: Agent) => (agent.name === BLANK_AGENT ? props.language.t("sidebar.agents.blank") : agent.name)
+  return (
+    <nav class="flex flex-col gap-3">
+      <Show when={props.loading()}>
+        <SessionSkeleton />
+      </Show>
+      <For each={agents()}>
+        {(agent) => {
+          const sessions = createMemo(() => grouped().get(agent.name) ?? [])
+          const newHref = () => `/${props.slug()}/session?agent=${encodeURIComponent(agent.name)}`
+          return (
+            <div class="group/agent flex flex-col gap-1" data-component="sidebar-agent" data-agent={agent.name}>
+              <div class="flex items-center gap-2 min-w-0 pl-2 pr-1">
+                <Tooltip value={agent.description ?? label(agent)} placement="right" class="min-w-0 flex-1">
+                  <span class="block text-12-medium text-text-weak uppercase tracking-wide truncate">
+                    {label(agent)}
+                  </span>
+                </Tooltip>
+                <Tooltip value={props.language.t("command.session.new")} placement="top">
+                  <A
+                    href={newHref()}
+                    class="shrink-0 size-6 rounded-md flex items-center justify-center text-icon-weak hover:bg-surface-base-hover opacity-0 pointer-events-none group-hover/agent:opacity-100 group-hover/agent:pointer-events-auto group-focus-within/agent:opacity-100 group-focus-within/agent:pointer-events-auto"
+                    data-action="agent-new-session"
+                    data-agent={agent.name}
+                    aria-label={props.language.t("command.session.new")}
+                    onClick={() => props.ctx.clearHoverProjectSoon()}
+                  >
+                    <IconV2 name="edit" size="small" />
+                  </A>
+                </Tooltip>
+              </div>
+              <Show
+                when={sessions().length > 0}
+                fallback={
+                  <A
+                    href={newHref()}
+                    class="flex items-center gap-2 min-w-0 w-full text-left py-1 pl-2 text-14-regular text-text-weak focus:outline-none"
+                    data-action="agent-new-session"
+                    data-agent={agent.name}
+                    onClick={() => props.ctx.clearHoverProjectSoon()}
+                  >
+                    {props.language.t("sidebar.agents.empty")}
+                  </A>
+                }
+              >
+                <For each={sessions()}>
+                  {(session) => (
+                    <SessionItem
+                      session={session}
+                      list={sessions()}
+                      navList={props.ctx.navList}
+                      slug={props.slug()}
+                      mobile={props.mobile}
+                      showChild
+                      sidebarExpanded={props.ctx.sidebarExpanded}
+                      clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
+                      prefetchSession={props.ctx.prefetchSession}
+                      archiveSession={props.ctx.archiveSession}
+                    />
+                  )}
+                </For>
+              </Show>
+            </div>
+          )
+        }}
+      </For>
+      <Show when={props.hasMore()}>
+        <div class="relative w-full py-1">
+          <Button
+            variant="ghost"
+            class="flex w-full text-left justify-start text-14-regular text-text-weak pl-2 pr-10"
+            size="large"
+            onClick={(e: MouseEvent) => {
+              void props.loadMore()
+              ;(e.currentTarget as HTMLButtonElement).blur()
+            }}
+          >
+            {props.language.t("common.loadMore")}
+          </Button>
+        </div>
+      </Show>
+    </nav>
   )
 }

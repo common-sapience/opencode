@@ -564,6 +564,10 @@ export function createServerSyncContextInner(serverSDK: ServerSDK) {
         bootstrap.refetch()
       if (eventType === "server.connected" || eventType === "global.disposed") {
         if (recent) return
+        // A global reload means the engine's configuration changed: the agent definitions a directory
+        // was bootstrapped with are stale, and the re-bootstrap below reads them through the query
+        // cache, so the cache has to go first (UI-03: a created agent appears without a reload).
+        queryClient.removeQueries({ predicate: (query) => query.queryKey.at(-1) === "agents" })
         for (const directory of Object.keys(children.children)) {
           if (!children.active(directory)) continue
           queue.push(directory)

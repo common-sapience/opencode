@@ -822,6 +822,17 @@ export const dict = {
   "sidebar.menu.toggle": "Basculer le menu",
   "sidebar.nav.projectsAndSessions": "Projets et sessions",
   "sidebar.settings": "Paramètres",
+  "sidebar.agents.title": "Agents",
+  "sidebar.agents.new": "New agent",
+  "sidebar.agents.blank": "General",
+  "sidebar.agents.empty": "No sessions yet",
+  "dialog.agent.create.title": "New agent",
+  "dialog.agent.create.name": "Name",
+  "dialog.agent.create.name.placeholder": "e.g. Researcher",
+  "dialog.agent.create.description": "What is this agent responsible for?",
+  "dialog.agent.create.description.placeholder": "Describe the job. This becomes the agent's instructions.",
+  "dialog.agent.create.submit": "Create",
+  "dialog.agent.create.creating": "Creating…",
   "sidebar.help": "Aide",
   "sidebar.workspaces.enable": "Activer les espaces de travail",
   "sidebar.workspaces.disable": "Désactiver les espaces de travail",
@@ -860,7 +871,8 @@ export const dict = {
   "settings.general.row.appearance.title": "Apparence",
   "settings.general.row.appearance.description": "Personnaliser l'apparence d'Common Sapience sur votre appareil",
   "settings.general.row.colorScheme.title": "Schéma de couleurs",
-  "settings.general.row.colorScheme.description": "Choisissez si Common Sapience suit le thème système, clair ou sombre",
+  "settings.general.row.colorScheme.description":
+    "Choisissez si Common Sapience suit le thème système, clair ou sombre",
   "settings.general.row.theme.title": "Thème",
   "settings.general.row.theme.description": "Personnaliser le thème d'Common Sapience.",
   "settings.general.row.font.title": "Police de code",
@@ -919,7 +931,8 @@ export const dict = {
   "settings.general.row.releaseNotes.description":
     "Afficher les fenêtres contextuelles « Quoi de neuf » après les mises à jour",
   "settings.updates.row.startup.title": "Vérifier les mises à jour au démarrage",
-  "settings.updates.row.startup.description": "Vérifier automatiquement les mises à jour au lancement d'Common Sapience",
+  "settings.updates.row.startup.description":
+    "Vérifier automatiquement les mises à jour au lancement d'Common Sapience",
   "settings.updates.row.check.title": "Vérifier les mises à jour",
   "settings.updates.row.check.description":
     "Rechercher manuellement les mises à jour et installer toute mise à jour disponible",
@@ -1009,7 +1022,8 @@ export const dict = {
   "settings.providers.description": "Les paramètres des fournisseurs seront configurables ici.",
   "settings.providers.section.connected": "Fournisseurs connectés",
   "settings.providers.connected.empty": "Aucun fournisseur connecté",
-  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
+  "settings.providers.gateway.noModels":
+    "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.section.popular": "Fournisseurs populaires",
   "settings.providers.tag.environment": "Environnement",
   "settings.providers.tag.config": "Configuration",

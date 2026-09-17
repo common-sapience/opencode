@@ -23,8 +23,8 @@ import { Button } from "@opencode-ai/ui/button"
 import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { IconButton } from "@opencode-ai/ui/icon-button"
 import { Tooltip } from "@opencode-ai/ui/tooltip"
-import { DropdownMenu } from "@opencode-ai/ui/dropdown-menu"
 import { Dialog } from "@opencode-ai/ui/dialog"
+import { DialogCreateAgent } from "@/components/dialog-create-agent"
 import { getFilename } from "@opencode-ai/core/util/path"
 import { Session } from "@opencode-ai/sdk/v2/client"
 import { usePlatform } from "@/context/platform"
@@ -35,7 +35,6 @@ import type { DragEvent } from "@thisbeyond/solid-dnd"
 import { useProviders } from "@/hooks/use-providers"
 import { dismissToast, setV2Toast, showToast, ToastRegion } from "@/utils/toast"
 import { useServerSDK } from "@/context/server-sdk"
-import { normalizeProjectInfo } from "@/context/global-sync/utils"
 import { clearWorkspaceTerminals } from "@/context/terminal"
 import { pickSessionCacheEvictions } from "@/context/global-sync/session-cache"
 import { useNotification } from "@/context/notification"
@@ -61,7 +60,6 @@ import { ServerConnection, useServer } from "@/context/server"
 import { useLanguage, type Locale } from "@/context/language"
 import { pathKey } from "@/utils/path-key"
 import {
-  displayName,
   effectiveWorkspaceOrder,
   errorMessage,
   latestRootSession,
@@ -1281,28 +1279,6 @@ export default function LegacyLayout(props: ParentProps) {
     makeEventListener(window, deepLinkEvent, handler as EventListener)
   })
 
-  async function renameProject(project: LocalProject, next: string) {
-    const current = displayName(project)
-    if (next === current) return
-    const name = next === getFilename(project.worktree) ? "" : next
-
-    if (project.id && project.id !== "global") {
-      const sdk = serverSDK()
-      if ((await sdk.protocol) !== "v1") return
-      const result = await sdk.client.project
-        .update({ projectID: project.id, directory: project.worktree, name })
-        .then((response) => response.data)
-      if (!result) return
-      // const result = await serverSDK().api.project.update({ projectID: project.id, name })
-      serverSync().set("project", (items) =>
-        items.map((item) => (item.id === result.id ? normalizeProjectInfo(result) : item)),
-      )
-      return
-    }
-
-    serverSync().project.meta(project.worktree, { name })
-  }
-
   const renameWorkspace = (directory: string, next: string, projectId?: string, branch?: string) => {
     const current = workspaceName(directory, projectId, branch) ?? branch ?? getFilename(directory)
     if (current === next) return
@@ -1925,42 +1901,18 @@ export default function LegacyLayout(props: ParentProps) {
     const merged = createMemo(() => panelProps.mobile || (panelProps.merged ?? layout.sidebar.opened()))
     const hover = createMemo(() => !panelProps.mobile && panelProps.merged === false && !layout.sidebar.opened())
     const empty = createMemo(() => !params.dir && layout.projects.list().length === 0)
-    const projectName = createMemo(() => {
-      const item = project()
-      if (!item) return ""
-      return item.name || getFilename(item.worktree)
-    })
-    const projectId = createMemo(() => project()?.id ?? "")
     const worktree = createMemo(() => project()?.worktree ?? "")
-    const slug = createMemo(() => {
-      const dir = worktree()
-      if (!dir) return ""
-      return base64Encode(dir)
-    })
     const workspaces = createMemo(() => {
       const item = project()
       if (!item) return [] as string[]
       return workspaceIds(item)
     })
-    const unseenCount = createMemo(() =>
-      workspaces().reduce((total, directory) => total + notification.project.unseenCount(directory), 0),
-    )
-    const clearNotifications = () =>
-      workspaces()
-        .filter((directory) => notification.project.unseenCount(directory) > 0)
-        .forEach((directory) => notification.project.markViewed(directory))
     const workspacesEnabled = createMemo(() => {
       const item = project()
       if (!item) return false
       if (item.vcs !== "git") return false
       return layout.sidebar.workspaces(item.worktree)()
     })
-    const canToggle = createMemo(() => {
-      const item = project()
-      if (!item) return false
-      return item.vcs === "git" || layout.sidebar.workspaces(item.worktree)()
-    })
-    const homedir = createMemo(() => serverSync().data.path.home)
 
     return (
       <div
@@ -2001,98 +1953,18 @@ export default function LegacyLayout(props: ParentProps) {
           {(project) => (
             <>
               <div class="shrink-0 pl-1 py-1">
-                <div class="group/project flex items-start justify-between gap-2 py-2 pl-2 pr-0">
-                  <div class="flex flex-col min-w-0">
-                    <InlineEditor
-                      id={`project:${projectId()}`}
-                      value={projectName}
-                      onSave={(next) => {
-                        void renameProject(project, next)
-                      }}
-                      class="text-14-medium text-text-strong truncate"
-                      displayClass="text-14-medium text-text-strong truncate"
-                      stopPropagation
-                    />
-
-                    <Tooltip
-                      placement="bottom"
-                      gutter={2}
-                      value={worktree()}
-                      class="shrink-0"
-                      contentStyle={{
-                        "max-width": "640px",
-                        transform: "translate3d(52px, 0, 0)",
-                      }}
-                    >
-                      <span class="text-12-regular text-text-base truncate select-text">
-                        {worktree().replace(homedir(), "~")}
-                      </span>
-                    </Tooltip>
-                  </div>
-
-                  <DropdownMenu modal={!sidebarHovering()}>
-                    <DropdownMenu.Trigger
-                      as={IconButton}
-                      icon="dot-grid"
+                <div class="flex items-center justify-between gap-2 py-2 pl-2 pr-0">
+                  <span class="text-14-medium text-text-strong truncate">{language.t("sidebar.agents.title")}</span>
+                  <Tooltip placement="bottom" value={language.t("sidebar.agents.new")}>
+                    <IconButton
+                      icon="plus-small"
                       variant="ghost"
-                      data-action="project-menu"
-                      data-project={slug()}
-                      class="shrink-0 size-6 rounded-md transition-opacity data-[expanded]:bg-surface-base-active"
-                      classList={{
-                        "opacity-100": panelProps.mobile || merged(),
-                        "opacity-0 group-hover/project:opacity-100 group-focus-within/project:opacity-100 data-[expanded]:opacity-100":
-                          !panelProps.mobile && !merged(),
-                      }}
-                      aria-label={language.t("common.moreOptions")}
+                      data-action="agent-create"
+                      class="shrink-0 size-6 rounded-md"
+                      aria-label={language.t("sidebar.agents.new")}
+                      onClick={() => dialog.show(() => <DialogCreateAgent />)}
                     />
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.Content class="mt-1">
-                        <DropdownMenu.Item
-                          onSelect={() => {
-                            showEditProjectDialog(server.current!, project)
-                          }}
-                        >
-                          <DropdownMenu.ItemLabel>{language.t("common.edit")}</DropdownMenu.ItemLabel>
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item
-                          data-action="project-workspaces-toggle"
-                          data-project={slug()}
-                          disabled={!canToggle()}
-                          onSelect={() => {
-                            toggleProjectWorkspaces(project)
-                          }}
-                        >
-                          <DropdownMenu.ItemLabel>
-                            {workspacesEnabled()
-                              ? language.t("sidebar.workspaces.disable")
-                              : language.t("sidebar.workspaces.enable")}
-                          </DropdownMenu.ItemLabel>
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item
-                          data-action="project-clear-notifications"
-                          data-project={slug()}
-                          disabled={unseenCount() === 0}
-                          onSelect={clearNotifications}
-                        >
-                          <DropdownMenu.ItemLabel>
-                            {language.t("sidebar.project.clearNotifications")}
-                          </DropdownMenu.ItemLabel>
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Separator />
-                        <DropdownMenu.Item
-                          data-action="project-close-menu"
-                          data-project={slug()}
-                          onSelect={() => {
-                            const dir = worktree()
-                            if (!dir) return
-                            closeProject(dir)
-                          }}
-                        >
-                          <DropdownMenu.ItemLabel>{language.t("common.close")}</DropdownMenu.ItemLabel>
-                        </DropdownMenu.Item>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu>
+                  </Tooltip>
                 </div>
               </div>
 
@@ -2231,6 +2103,7 @@ export default function LegacyLayout(props: ParentProps) {
       handleDragEnd={handleDragEnd}
       handleDragOver={handleDragOver}
       openProjectLabel={language.t("command.project.open")}
+      canOpenProject={false}
       openProjectKeybind={() => command.keybind("project.open")}
       onOpenProject={chooseProject}
       renderProjectOverlay={projectOverlay}

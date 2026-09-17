@@ -559,7 +559,8 @@ export const dict = {
   "error.chain.didYouMean": "Tarkoititko: {{suggestions}}",
   "error.chain.modelNotFound": "Mallia ei löydy: {{provider}}/{{model}}",
   "error.chain.checkConfig": "Tarkista määritysten (opencode.json) palveluntarjoajien ja mallien nimet",
-  "error.chain.mcpFailed": 'MCP-palvelin "{{name}}" epäonnistui. Huomaa, että Common Sapience ei vielä tue MCP-todennusta.',
+  "error.chain.mcpFailed":
+    'MCP-palvelin "{{name}}" epäonnistui. Huomaa, että Common Sapience ei vielä tue MCP-todennusta.',
   "error.chain.providerAuthFailed": "Palveluntarjoajan todennus epäonnistui ({{provider}}): {{message}}",
   "error.chain.providerInitFailed":
     'Palveluntarjoajan "{{provider}}" alustaminen epäonnistui. Tarkista tunnistetiedot ja määritykset.',
@@ -764,6 +765,17 @@ export const dict = {
   "sidebar.menu.toggle": "Näytä tai piilota valikko",
   "sidebar.nav.projectsAndSessions": "Projektit ja istunnot",
   "sidebar.settings": "Asetukset",
+  "sidebar.agents.title": "Agents",
+  "sidebar.agents.new": "New agent",
+  "sidebar.agents.blank": "General",
+  "sidebar.agents.empty": "No sessions yet",
+  "dialog.agent.create.title": "New agent",
+  "dialog.agent.create.name": "Name",
+  "dialog.agent.create.name.placeholder": "e.g. Researcher",
+  "dialog.agent.create.description": "What is this agent responsible for?",
+  "dialog.agent.create.description.placeholder": "Describe the job. This becomes the agent's instructions.",
+  "dialog.agent.create.submit": "Create",
+  "dialog.agent.create.creating": "Creating…",
   "sidebar.help": "Ohje",
   "sidebar.workspaces.enable": "Ota työtilat käyttöön",
   "sidebar.workspaces.disable": "Poista työtilat käytöstä",
@@ -975,7 +987,8 @@ export const dict = {
   "settings.providers.description": "Palveluntarjoajan asetukset voidaan määrittää täällä.",
   "settings.providers.section.connected": "Yhdistetyt palveluntarjoajat",
   "settings.providers.connected.empty": "Ei yhdistettyjä palveluntarjoajia",
-  "settings.providers.gateway.noModels": "The key was saved, but the gateway listed no models for it. Check the key and try again.",
+  "settings.providers.gateway.noModels":
+    "The key was saved, but the gateway listed no models for it. Check the key and try again.",
   "settings.providers.connected.environmentDescription": "Yhdistetty ympäristömuuttujien kautta",
   "settings.providers.section.popular": "Suositut palveluntarjoajat",
   "settings.providers.custom.description":

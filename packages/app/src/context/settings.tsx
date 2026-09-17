@@ -59,8 +59,10 @@ export const sansDefault = "System Sans"
 export const terminalDefault = "JetBrainsMono Nerd Font Mono"
 const legacyNewLayoutDesignsDefault = import.meta.env.VITE_OPENCODE_CHANNEL !== "prod"
 export const newLayoutDesignsDefault = true
-// Existing users can switch layouts until local midnight on this date. Set new Date(YYYY, M-1, D) to show.
-export const oldInterfaceSunset = new Date(2026, 8, 14)
+// The product is sidebar-first (UI-01, UI-02): agents and their sessions live in the sidebar layout,
+// so upstream's tabbed layout is never selected and the sidebar layout has no sunset.
+export const productSidebarLayout = true
+export const oldInterfaceSunset = undefined as Date | undefined
 const newLayoutDesignsUpgradeCutoff = "1.17.19"
 
 function compareVersions(a: string, b: string) {
@@ -261,6 +263,7 @@ export const { use: useSettings, provider: SettingsProvider } = createSimpleCont
       layoutTransitionState(!!sunset, layoutTransitionEligible(), oldInterfaceRetired(), newInterfaceNoticeDismissed()),
     )
     const newLayoutDesigns = createMemo(() => {
+      if (productSidebarLayout) return false
       if (layoutUpgrade()) return true
       if (!ready() && !oldInterfaceRetired()) return legacyNewLayoutDesignsDefault
       if (!layoutTransitionClassified()) {

@@ -367,7 +367,7 @@ export default function Page() {
   const comments = useComments()
   const command = useCommand()
   const terminal = useTerminal()
-  const [searchParams, setSearchParams] = useSearchParams<{ prompt?: string }>()
+  const [searchParams, setSearchParams] = useSearchParams<{ prompt?: string; agent?: string }>()
   const location = useLocation()
   const navigate = useNavigate()
   const { params, sessionKey, workspaceKey, tabs, view } = useSessionLayout()
@@ -375,6 +375,16 @@ export default function Page() {
   const reviewFile = () => view().review.file()
   const sessionOwnership = createSessionOwnership(sessionKey)
   const newSessionDesign = createMemo(() => settings.general.newLayoutDesigns())
+
+  createEffect(() => {
+    const name = searchParams.agent
+    if (!name || params.id) return
+    if (!local.agent.list().some((item) => item.name === name)) return
+    untrack(() => {
+      local.agent.set(name)
+      setSearchParams({ ...searchParams, agent: undefined })
+    })
+  })
 
   createEffect(() => {
     if (!prompt.ready()) return

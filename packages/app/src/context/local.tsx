@@ -183,7 +183,10 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
       list,
       visible: agentsVisible,
       current() {
-        return pickAgent(agentsVisible() ? (scope()?.agent ?? store.current) : "build")
+        const session = id()
+        const bound = session ? sync().session.get(session)?.agent : undefined
+        if (bound) return pickAgent(bound)
+        return pickAgent(agentsVisible() ? (scope()?.agent ?? store.current) : "default")
       },
       set(name: string | undefined) {
         const item = pickAgent(name)

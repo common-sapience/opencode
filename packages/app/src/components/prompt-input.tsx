@@ -1657,20 +1657,34 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       title={language.t("command.agent.cycle")}
                       keybind={command.keybind("agent.cycle")}
                     >
-                      <Select
-                        size="normal"
-                        options={props.controls.agents.options}
-                        current={props.controls.agents.current}
-                        onSelect={(value) => {
-                          props.controls.agents.select(value)
-                          restoreFocus()
-                        }}
-                        class="capitalize max-w-[160px] text-text-base"
-                        valueClass="truncate text-13-regular text-text-base"
-                        triggerStyle={control()}
-                        triggerProps={{ "data-action": "prompt-agent" }}
-                        variant="ghost"
-                      />
+                      <Show
+                        when={!props.controls.session.id}
+                        fallback={
+                          <div
+                            data-action="prompt-agent"
+                            data-readonly="true"
+                            class="flex items-center px-2 capitalize max-w-[160px] truncate text-13-regular text-text-base"
+                            style={control()}
+                          >
+                            {props.controls.agents.current}
+                          </div>
+                        }
+                      >
+                        <Select
+                          size="normal"
+                          options={props.controls.agents.options}
+                          current={props.controls.agents.current}
+                          onSelect={(value) => {
+                            props.controls.agents.select(value)
+                            restoreFocus()
+                          }}
+                          class="capitalize max-w-[160px] text-text-base"
+                          valueClass="truncate text-13-regular text-text-base"
+                          triggerStyle={control()}
+                          triggerProps={{ "data-action": "prompt-agent" }}
+                          variant="ghost"
+                        />
+                      </Show>
                     </TooltipKeybind>
                   </div>
                 </Show>
