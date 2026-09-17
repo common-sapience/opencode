@@ -824,6 +824,7 @@ export const dict = {
   "sidebar.menu.toggle": "Basculer le menu",
   "sidebar.nav.projectsAndSessions": "Projets et sessions",
   "sidebar.settings": "Paramètres",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

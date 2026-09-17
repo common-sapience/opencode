@@ -864,6 +864,7 @@ export const dict = {
   "sidebar.menu.toggle": "ສະຫຼັບເມນູ",
   "sidebar.nav.projectsAndSessions": "ໂຄງການ ແລະກອງປະຊຸມ",
   "sidebar.settings": "ການຕັ້ງຄ່າ",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

@@ -865,6 +865,7 @@ export const dict = {
   "sidebar.menu.toggle": "បិទ/បើកម៉ឺនុយ",
   "sidebar.nav.projectsAndSessions": "គម្រោង និងសម័យ",
   "sidebar.settings": "ការកំណត់",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

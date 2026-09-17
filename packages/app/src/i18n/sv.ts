@@ -873,6 +873,7 @@ export const dict = {
   "sidebar.menu.toggle": "Växla meny",
   "sidebar.nav.projectsAndSessions": "Projekt och sessioner",
   "sidebar.settings": "Inställningar",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

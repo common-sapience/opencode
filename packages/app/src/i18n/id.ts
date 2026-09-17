@@ -943,6 +943,7 @@ export const dict = {
   "sidebar.menu.toggle": "Alihkan menu",
   "sidebar.nav.projectsAndSessions": "Proyek dan sesi",
   "sidebar.settings": "Pengaturan",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

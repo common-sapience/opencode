@@ -881,6 +881,7 @@ export const dict: Record<string, string> = {
   "sidebar.menu.toggle": "དཀར་ཆག་སོར་བསྒྱུར་འབད།",
   "sidebar.nav.projectsAndSessions": "ལས་གཞི་དང་ཚོགས་ཚན།",
   "sidebar.settings": "སྒྲིག་སྟངས་ཚུ།",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

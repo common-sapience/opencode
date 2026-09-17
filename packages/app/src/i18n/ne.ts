@@ -868,6 +868,7 @@ export const dict: Record<string, string> = {
   "sidebar.menu.toggle": "मेनु टगल गर्नुहोस्",
   "sidebar.nav.projectsAndSessions": "परियोजनाहरू र सत्रहरू",
   "sidebar.settings": "सेटिङहरू",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

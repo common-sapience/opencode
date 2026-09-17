@@ -870,6 +870,7 @@ export const dict = {
   "sidebar.menu.toggle": "สลับเมนู",
   "sidebar.nav.projectsAndSessions": "โปรเจกต์และเซสชัน",
   "sidebar.settings": "การตั้งค่า",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

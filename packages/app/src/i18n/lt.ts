@@ -880,6 +880,7 @@ export const dict = {
   "sidebar.menu.toggle": "Perjungti meniu",
   "sidebar.nav.projectsAndSessions": "Projektai ir užsiėmimai",
   "sidebar.settings": "Nustatymai",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

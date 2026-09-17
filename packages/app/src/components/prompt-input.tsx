@@ -1649,8 +1649,12 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                 <Show when={!agentsLoading()}>
                   <div
                     data-component="prompt-agent-control"
+                    class="flex items-center gap-1"
                     classList={{ "animate-in fade-in duration-300": agentsShouldFadeIn() }}
                   >
+                    <span class="text-12-medium text-text-weak shrink-0 select-none">
+                      {language.t("prompt.agent.label")}
+                    </span>
                     <TooltipKeybind
                       placement="top"
                       gutter={4}

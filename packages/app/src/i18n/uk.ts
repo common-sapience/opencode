@@ -956,6 +956,7 @@ export const dict = {
   "sidebar.menu.toggle": "Перемкнути меню",
   "sidebar.nav.projectsAndSessions": "Проєкти та сесії",
   "sidebar.settings": "Налаштування",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

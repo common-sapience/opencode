@@ -767,6 +767,7 @@ export const dict = {
   "sidebar.menu.toggle": "Näytä tai piilota valikko",
   "sidebar.nav.projectsAndSessions": "Projektit ja istunnot",
   "sidebar.settings": "Asetukset",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

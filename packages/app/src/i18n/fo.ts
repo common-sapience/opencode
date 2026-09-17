@@ -868,6 +868,7 @@ export const dict = {
   "sidebar.menu.toggle": "Skift valmynd",
   "sidebar.nav.projectsAndSessions": "Verkætlanir og setur",
   "sidebar.settings": "Innstillingar",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

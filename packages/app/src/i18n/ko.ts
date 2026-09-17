@@ -569,6 +569,7 @@ export const dict = {
   "sidebar.menu.toggle": "메뉴 토글",
   "sidebar.nav.projectsAndSessions": "프로젝트 및 세션",
   "sidebar.settings": "설정",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

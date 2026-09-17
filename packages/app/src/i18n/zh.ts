@@ -868,6 +868,7 @@ export const dict = {
   "sidebar.menu.toggle": "切换菜单",
   "sidebar.nav.projectsAndSessions": "项目和会话",
   "sidebar.settings": "设置",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agent",
   "sidebar.agents.new": "新建 agent",
   "sidebar.agents.blank": "通用",

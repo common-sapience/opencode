@@ -872,6 +872,7 @@ export const dict = {
   "sidebar.menu.toggle": "Preklopi meni",
   "sidebar.nav.projectsAndSessions": "Projekti in seje",
   "sidebar.settings": "nastavitve",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

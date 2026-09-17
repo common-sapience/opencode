@@ -873,6 +873,7 @@ export const dict = {
   "sidebar.menu.toggle": "Menyuni almashtirish",
   "sidebar.nav.projectsAndSessions": "Loyihalar va sessiyalar",
   "sidebar.settings": "Sozlamalar",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

@@ -874,6 +874,7 @@ export const dict = {
   "sidebar.menu.toggle": "Váltó menü",
   "sidebar.nav.projectsAndSessions": "Projektek és foglalkozások",
   "sidebar.settings": "Beállítások",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

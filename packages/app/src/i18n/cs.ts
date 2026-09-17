@@ -872,6 +872,7 @@ export const dict = {
   "sidebar.menu.toggle": "Přepnout nabídku",
   "sidebar.nav.projectsAndSessions": "Projekty a relace",
   "sidebar.settings": "Nastavení",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

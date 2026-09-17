@@ -869,6 +869,7 @@ export const dict = {
   "sidebar.menu.toggle": "Menýu açyň",
   "sidebar.nav.projectsAndSessions": "Taslamalar we sessiýalar",
   "sidebar.settings": "Sazlamalar",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",

@@ -874,6 +874,7 @@ export const dict = {
   "sidebar.menu.toggle": "Цэсийг сэлгэх",
   "sidebar.nav.projectsAndSessions": "Төсөл ба хуралдаанууд",
   "sidebar.settings": "Тохиргоо",
+  "prompt.agent.label": "Agent",
   "sidebar.agents.title": "Agents",
   "sidebar.agents.new": "New agent",
   "sidebar.agents.blank": "General",
