@@ -50,6 +50,23 @@ export function provider(model: Provider.Model) {
   return [PROMPT_DEFAULT]
 }
 
+// A user-created agent (ENG-21, D-02) is a role its author wrote in one box, not a system prompt:
+// it keeps the base prompt and is told the name it was created under, so it can say who it is.
+function identity(agent: Agent.Info) {
+  return [
+    `You are ${agent.name}. That is the name the user created you under and the name to give when asked who you are;`,
+    `it takes precedence over any name or identity implied above.`,
+    ...(agent.prompt ? ["", `The user described your job as follows.`, "", agent.prompt] : []),
+  ].join("\n")
+}
+
+// The leading chunks of the system prompt: who the agent is, before the environment and the
+// project's own instructions.
+export function persona(agent: Agent.Info, model: Provider.Model) {
+  if (agent.inheritBasePrompt) return [...provider(model), identity(agent)]
+  return agent.prompt ? [agent.prompt] : provider(model)
+}
+
 export interface Interface {
   readonly environment: (model: Provider.Model) => Effect.Effect<string[]>
   readonly skills: (agent: Agent.Info) => Effect.Effect<string | undefined>

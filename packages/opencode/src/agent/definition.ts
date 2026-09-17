@@ -82,9 +82,12 @@ export const create = Effect.fn("AgentDefinition.create")(function* (input: Crea
   if (description.length === 0)
     return yield* Effect.fail(new InvalidError({ message: "An agent needs a description." }))
 
+  // The description is a role, not a replacement system prompt: the engine keeps the base prompt
+  // and prepends the agent's own name to the role (D-02).
   const content = matter.stringify(`${description}\n`, {
     description: description.split("\n")[0],
     mode: "primary",
+    inherit_base_prompt: true,
   })
   const target = file(name)
   yield* Effect.promise(() => fs.mkdir(directory(), { recursive: true }))
