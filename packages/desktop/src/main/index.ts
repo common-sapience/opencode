@@ -112,7 +112,21 @@ function ensureLoopbackNoProxy() {
   upsert("no_proxy")
 }
 
+const OZONE_X11 = "--ozone-platform=x11"
+
+// On GNOME Wayland this Electron's native Wayland window never appears although the renderer runs;
+// XWayland shows it. The switch only takes effect on the command line, and a launcher may still
+// carry a cached Exec line without it, so a Linux process started without it relaunches itself once.
+function relaunchUnderX11() {
+  if (process.platform !== "linux" || !app.isPackaged) return false
+  if (process.argv.includes(OZONE_X11) || process.env.ELECTRON_OZONE_PLATFORM_HINT) return false
+  app.relaunch({ args: [...process.argv.slice(1), OZONE_X11] })
+  app.exit(0)
+  return true
+}
+
 const main = Effect.gen(function* () {
+  if (relaunchUnderX11()) return
   contextMenu({ showSaveImageAs: true, showLookUpSelection: false, showSearchWithGoogle: false })
 
   // on macOS apps run in `/` which can cause issues with ripgrep
