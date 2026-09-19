@@ -6,9 +6,18 @@ describe("app env", () => {
   test("the engine never walks the opened directory", () => {
     const env = appEnv({ userDataPath: "/data", shellEnv: null, stateHome: undefined })
 
-    expect(env.OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER).toBe("true")
     expect(env.OPENCODE_EXPERIMENTAL_FILEWATCHER).toBe("false")
     expect(env.OPENCODE_EXPERIMENTAL_ICON_DISCOVERY).toBe("false")
+  })
+
+  test("the watcher service stays on so the branch name follows .git/HEAD", () => {
+    const env = appEnv({
+      userDataPath: "/data",
+      shellEnv: { OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER: "true" },
+      stateHome: undefined,
+    })
+
+    expect(env.OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER).toBe("false")
   })
 
   test("a shell environment cannot switch directory walks back on", () => {
@@ -16,7 +25,6 @@ describe("app env", () => {
       userDataPath: "/data",
       shellEnv: {
         PATH: "/shell/bin",
-        OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER: "false",
         OPENCODE_EXPERIMENTAL_FILEWATCHER: "true",
         OPENCODE_EXPERIMENTAL_ICON_DISCOVERY: "true",
       },
@@ -24,7 +32,6 @@ describe("app env", () => {
     })
 
     expect(env.PATH).toBe("/shell/bin")
-    expect(env.OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER).toBe("true")
     expect(env.OPENCODE_EXPERIMENTAL_FILEWATCHER).toBe("false")
     expect(env.OPENCODE_EXPERIMENTAL_ICON_DISCOVERY).toBe("false")
   })
