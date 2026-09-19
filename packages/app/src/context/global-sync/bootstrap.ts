@@ -38,7 +38,7 @@ import {
   normalizeProviderList,
 } from "./utils"
 import { formatServerError } from "@/utils/server-errors"
-import { QueryClient, queryOptions } from "@tanstack/solid-query"
+import { isCancelledError, QueryClient, queryOptions } from "@tanstack/solid-query"
 import { loadMcpQuery, loadMcpResourcesQuery } from "../server-sync"
 import { NormalizedProviderListResponse } from "@opencode-ai/session-ui/context"
 import { ScopedKey, type ServerScope } from "@/utils/server-scope"
@@ -374,10 +374,15 @@ export async function bootstrapDirectory(input: {
   ;(async () => {
     const slow = [
       () => Promise.resolve(input.loadSessions(input.directory)),
-      () =>
-        input.queryClient
-          .ensureQueryData(loadAgentsQuery(input.scope, input.directory, input.api.agent, input.sdk, input.protocol))
-          .then((data) => input.setStore("agent", data)),
+      () => {
+        const agents = loadAgentsQuery(input.scope, input.directory, input.api.agent, input.sdk, input.protocol)
+        // A global reload drops the agent cache while this load may be in flight; the cancellation
+        // means the definitions changed, so the answer is a fresh read and not an error.
+        return input.queryClient
+          .ensureQueryData(agents)
+          .catch((error) => (isCancelledError(error) ? input.queryClient.fetchQuery(agents) : Promise.reject(error)))
+          .then((data) => input.setStore("agent", data))
+      },
       () =>
         retry(async () => {
           if ((await input.protocol) !== "v1") return

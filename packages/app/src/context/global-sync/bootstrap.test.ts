@@ -183,6 +183,56 @@ describe("bootstrapDirectory", () => {
   })
 })
 
+describe("bootstrapDirectory agent reload", () => {
+  test("a cache reset during the first agent load finishes the bootstrap with the fresh list", async () => {
+    const [store, setStore] = directoryState()
+    const queryClient = new QueryClient()
+    const pending: ((names: string[]) => void)[] = []
+    const agentApi = {
+      ...api,
+      agent: {
+        list: () =>
+          new Promise((resolve) => {
+            pending.push((names) => resolve({ location: {}, data: names.map((name) => ({ name, mode: "primary" })) }))
+          }),
+      },
+    } as unknown as ServerApi
+
+    await bootstrapDirectory({
+      directory: "/project",
+      scope: ServerScope.local,
+      mcp: false,
+      global: {
+        config: {} satisfies Config,
+        path: { state: "", config: "", worktree: "/project", directory: "/project", home: "/home" },
+        project: [{ id: "project", worktree: "/project" } as Project],
+        provider,
+      },
+      sdk: {} as unknown as OpencodeClient,
+      api: agentApi,
+      store,
+      setStore,
+      vcsCache: { setStore() {} } as unknown as VcsCache,
+      loadSessions() {},
+      translate: (key) => key,
+      queryClient,
+      protocol: Promise.resolve("v2"),
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 80))
+    expect(pending.length).toBe(1)
+    queryClient.removeQueries({ predicate: (query) => query.queryKey.at(-1) === "agents" })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(pending.length).toBe(2)
+    pending[0](["stale"])
+    pending[1](["fresh"])
+    await new Promise((resolve) => setTimeout(resolve, 80))
+
+    expect(store.agent.map((agent) => agent.name)).toEqual(["fresh"])
+    expect(store.status).toBe("complete")
+  })
+})
+
 describe("config queries", () => {
   test("skips legacy global config for v2 servers", async () => {
     const sdk = {
