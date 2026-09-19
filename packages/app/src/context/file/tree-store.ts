@@ -169,6 +169,7 @@ export function createFileTreeStore(options: TreeStoreOptions) {
     children,
     node: (path: string) => tree.node[path],
     isLoaded: (path: string) => Boolean(tree.dir[path]?.loaded),
+    loadedDirs: () => Object.keys(tree.dir).filter((path) => tree.dir[path]?.loaded),
     reset,
   }
 }

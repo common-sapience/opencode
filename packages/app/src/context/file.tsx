@@ -25,6 +25,7 @@ import { createFileViewCache } from "./file/view-cache"
 import { useServerSDK } from "./server-sdk"
 import { SessionRouteKey, SessionStateKey } from "@/utils/server-scope"
 import { createFileTreeStore } from "./file/tree-store"
+import { createReturnRefresh, refreshLoaded } from "./file/refresh"
 import { invalidateFromWatcher } from "./file/watcher"
 import {
   selectionFromLines,
@@ -51,6 +52,8 @@ function errorMessage(error: unknown, fallback: string) {
   if (typeof error === "string" && error) return error
   return fallback
 }
+
+const RETURN_REFRESH_MIN_INTERVAL_MS = 2_000
 
 export const { use: useFile, provider: FileProvider } = createSimpleContext({
   name: "File",
@@ -262,8 +265,34 @@ export const { use: useFile, provider: FileProvider } = createSimpleContext({
     const setSelectedLines = (input: string, range: SelectedLineRange | null) =>
       withPath(input, (file) => view().setSelectedLines(file, range))
 
+    const onReturn = createReturnRefresh({
+      refresh: () =>
+        refreshLoaded({
+          loadedDirs: tree.loadedDirs,
+          loadedFiles: () => Object.keys(store.file).filter((file) => store.file[file]?.loaded),
+          openFiles: () =>
+            tabs
+              .all()
+              .map((tab) => path.pathFromTab(tab))
+              .filter((file): file is string => Boolean(file)),
+          refreshDir: (dir) => {
+            void tree.listDir(dir, { force: true })
+          },
+          loadFile: (file) => {
+            void load(file, { force: true })
+          },
+        }),
+      visible: () => document.visibilityState === "visible",
+      now: () => Date.now(),
+      minIntervalMs: RETURN_REFRESH_MIN_INTERVAL_MS,
+    })
+    window.addEventListener("focus", onReturn)
+    document.addEventListener("visibilitychange", onReturn)
+
     onCleanup(() => {
       stop()
+      window.removeEventListener("focus", onReturn)
+      document.removeEventListener("visibilitychange", onReturn)
       viewCache.clear()
     })
 
