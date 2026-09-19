@@ -3,7 +3,7 @@
 
 export const BLANK_AGENT = "default"
 
-type AgentLike = { name: string; mode: string; hidden?: boolean }
+type AgentLike = { name: string; mode: string; hidden?: boolean; description?: string }
 type SessionLike = { agent?: string }
 
 // The agents a user can pick: primary definitions that are not hidden, the blank agent first, the
@@ -29,4 +29,15 @@ export function groupSessionsByAgent<T extends SessionLike>(
     else groups.set(key, [session])
   }
   return groups
+}
+
+// The groups the sidebar draws. The agent list and the session list load separately, so a session
+// whose group is missing -- the list is late, failed, or has no blank agent -- still gets the blank
+// group rather than disappearing.
+export function sidebarAgents<T extends AgentLike>(agents: readonly T[], sessions: readonly SessionLike[]): AgentLike[] {
+  const listed = userAgents(agents)
+  if (listed.some((agent) => agent.name === BLANK_AGENT)) return listed
+  const names = new Set(listed.map((agent) => agent.name))
+  if (sessions.every((session) => session.agent !== undefined && names.has(session.agent))) return listed
+  return [{ name: BLANK_AGENT, mode: "primary" }, ...listed]
 }

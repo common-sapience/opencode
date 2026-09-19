@@ -23,7 +23,7 @@ import { useLanguage } from "@/context/language"
 import { pathKey } from "@/utils/path-key"
 import { NewSessionItem, SessionItem, SessionSkeleton } from "./sidebar-items"
 import { sortedRootSessions } from "./helpers"
-import { BLANK_AGENT, groupSessionsByAgent, userAgents } from "./sidebar-agents"
+import { BLANK_AGENT, groupSessionsByAgent, sidebarAgents } from "./sidebar-agents"
 import { useIsFetching, useQuery } from "@tanstack/solid-query"
 
 type InlineEditorComponent = (props: {
@@ -552,9 +552,9 @@ const AgentSessionList = (props: {
   loadMore: () => Promise<void>
   language: ReturnType<typeof useLanguage>
 }): JSX.Element => {
-  const agents = createMemo(() => userAgents(props.agents()))
+  const agents = createMemo(() => sidebarAgents(props.agents(), props.sessions()))
   const grouped = createMemo(() => groupSessionsByAgent(agents(), props.sessions()))
-  const label = (agent: Agent) => (agent.name === BLANK_AGENT ? props.language.t("sidebar.agents.blank") : agent.name)
+  const label = (agent: { name: string }) => (agent.name === BLANK_AGENT ? props.language.t("sidebar.agents.blank") : agent.name)
   const [collapsed, setCollapsed] = createStore<Record<string, boolean>>(readCollapsed())
   const toggle = (name: string) => {
     setCollapsed(name, (value) => !value)
