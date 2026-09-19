@@ -45,7 +45,15 @@ export function setDefaultServerUrl(url: string | null) {
 export function preferAppEnv(userDataPath: string) {
   const shell = process.platform === "win32" ? null : getUserShell()
   const shellEnv = shell ? loadShellEnv(shell, getLogger()) : null
-  Object.assign(process.env, appEnv({ userDataPath, shellEnv, stateHome: process.env.XDG_STATE_HOME }))
+  Object.assign(
+    process.env,
+    appEnv({
+      userDataPath,
+      appRoot: dirname(process.resourcesPath),
+      shellEnv,
+      stateHome: process.env.XDG_STATE_HOME,
+    }),
+  )
   return shellEnv
 }
 

@@ -10,6 +10,7 @@ import { fileURLToPath } from "url"
 // value here, before any configuration file is read. An unset variable substitutes to an empty
 // string, which would turn `{env:DIR}/*` into `/*` and `node {env:ENTRY}` into `node ""`.
 
+const APP_ROOT = "HARNESS_APP_ROOT"
 const PRODUCT_DIR = "HARNESS_PRODUCT_DIR"
 const BROWSER_ENTRY = "HARNESS_BROWSER_MCP_ENTRY"
 const BROWSER_HEADLESS = "HARNESS_BROWSER_HEADLESS"
@@ -30,27 +31,42 @@ export const GATEWAY_PROVIDER = "platform"
 const BROWSER_HEADLESS_DEFAULT = "false"
 const BROWSER_AUTO_CONNECT_DEFAULT = "false"
 
-// Where the engine's own files sit: the package directory in a source checkout, and the directory
-// holding the executable once compiled, where module paths no longer exist on disk. A built bundle
-// therefore has to ship `product/` and `node_modules/<browser package>` next to the binary.
-function roots() {
+// Where the engine's own files sit: the root the host names, the package directory in a source
+// checkout, and the directory holding the executable once compiled, where module paths no longer
+// exist on disk. A built bundle therefore ships `product/` and `node_modules/<browser package>`
+// under one of them. The executable alone is not enough for a host that runs the engine in a helper
+// process: a macOS helper lives in its own bundle, far from the application's files, so the host
+// names the root in `HARNESS_APP_ROOT`.
+export function candidateRoots(input: { appRoot?: string; moduleRoot?: string; execPath?: string }) {
   const out: string[] = []
   const add = (value: string | undefined) => {
     if (value && !out.includes(value)) out.push(value)
   }
-  try {
-    add(path.resolve(fileURLToPath(new URL("../../", import.meta.url))))
-  } catch {
-    // A compiled binary has no filesystem module path; the executable's own directory covers it.
-  }
-  try {
-    const executable = path.dirname(process.execPath)
+  add(input.appRoot)
+  add(input.moduleRoot)
+  if (input.execPath) {
+    const executable = path.dirname(input.execPath)
     add(executable)
     add(path.dirname(executable))
-  } catch {
-    // No executable path means there is nothing else to probe.
   }
   return out
+}
+
+function moduleRoot() {
+  try {
+    return path.resolve(fileURLToPath(new URL("../../", import.meta.url)))
+  } catch {
+    // A compiled binary has no filesystem module path; the other roots cover it.
+    return undefined
+  }
+}
+
+function roots() {
+  return candidateRoots({
+    appRoot: process.env[APP_ROOT],
+    moduleRoot: moduleRoot(),
+    execPath: process.execPath,
+  })
 }
 
 function firstExisting(candidates: string[]) {

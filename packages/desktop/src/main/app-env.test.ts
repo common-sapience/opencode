@@ -4,7 +4,7 @@ import { appEnv } from "./app-env"
 
 describe("app env", () => {
   test("the engine never walks the opened directory", () => {
-    const env = appEnv({ userDataPath: "/data", shellEnv: null, stateHome: undefined })
+    const env = appEnv({ userDataPath: "/data", appRoot: "/app", shellEnv: null, stateHome: undefined })
 
     expect(env.OPENCODE_EXPERIMENTAL_FILEWATCHER).toBe("false")
     expect(env.OPENCODE_EXPERIMENTAL_ICON_DISCOVERY).toBe("false")
@@ -13,6 +13,7 @@ describe("app env", () => {
   test("the watcher service stays on so the branch name follows .git/HEAD", () => {
     const env = appEnv({
       userDataPath: "/data",
+      appRoot: "/app",
       shellEnv: { OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER: "true" },
       stateHome: undefined,
     })
@@ -23,6 +24,7 @@ describe("app env", () => {
   test("a shell environment cannot switch directory walks back on", () => {
     const env = appEnv({
       userDataPath: "/data",
+      appRoot: "/app",
       shellEnv: {
         PATH: "/shell/bin",
         OPENCODE_EXPERIMENTAL_FILEWATCHER: "true",
@@ -36,11 +38,22 @@ describe("app env", () => {
     expect(env.OPENCODE_EXPERIMENTAL_ICON_DISCOVERY).toBe("false")
   })
 
+  test("names the directory that holds the shipped product files", () => {
+    const env = appEnv({
+      userDataPath: "/data",
+      appRoot: "/Applications/App.app/Contents",
+      shellEnv: { HARNESS_APP_ROOT: "/somewhere/else" },
+      stateHome: undefined,
+    })
+
+    expect(env.HARNESS_APP_ROOT).toBe("/Applications/App.app/Contents")
+  })
+
   test("keeps the client marker and an existing state home", () => {
-    expect(appEnv({ userDataPath: "/data", shellEnv: null, stateHome: undefined })).toMatchObject({
+    expect(appEnv({ userDataPath: "/data", appRoot: "/app", shellEnv: null, stateHome: undefined })).toMatchObject({
       OPENCODE_CLIENT: "desktop",
       XDG_STATE_HOME: "/data",
     })
-    expect(appEnv({ userDataPath: "/data", shellEnv: null, stateHome: "/state" }).XDG_STATE_HOME).toBe("/state")
+    expect(appEnv({ userDataPath: "/data", appRoot: "/app", shellEnv: null, stateHome: "/state" }).XDG_STATE_HOME).toBe("/state")
   })
 })
